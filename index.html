@@ -3,222 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>引力场可视化</title>
-    <style>
-        body {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            background-color: #f0f0f0;
-        }
-        canvas {
-            border: 2px solid #333;
-            background-color: #000; /* 模拟太空背景 */
-            cursor: crosshair;
-            box-shadow: 5px 5px 15px rgba(0,0,0,0.3);
-        }
-        .controls {
-            margin-top: 20px;
-            text-align: center;
-        }
-        .info {
-            margin-top: 10px;
-            font-size: 1.1em;
-            color: #555;
-        }
-        .slider-container {
-            margin-top: 10px;
-            display: flex;
-            align-items: center;
-        }
-        .slider-container label {
-            margin-right: 10px;
-        }
-        input[type="range"] {
-            width: 300px;
-        }
-    </style>
+    <title>重力抛物线小球</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>引力场可视化模拟</h1>
-    <p>将鼠标移动到黑色区域，感受引力场！</p>
     <canvas id="gravityCanvas"></canvas>
+    <div id="info">点击开始</div>
 
-    <div class="controls">
-        <div class="slider-container">
-            <label for="visualScaleSlider">箭头长度比例 (视觉缩放因子):</label>
-            <input type="range" id="visualScaleSlider" min="1e10" max="5e12" value="1e11" step="1e9">
-            <span id="scaleValueDisplay">1.0E+11</span>
+    <div id="controls">
+        <div>
+            <label for="gravitySlider">重力:</label>
+            <input type="range" id="gravitySlider" min="0.05" max="0.5" step="0.01">
+            <span id="gravityValue"></span>
         </div>
-        <div class="info">
-            <p>引力常数 (G): 6.674 × 10<sup>-11</sup> N·m²/kg²</p>
-            <p>太阳质量 (M<sub>Sun</sub>): 1.989 × 10<sup>30</sup> kg</p>
-            <p>鼠标位置引力场强度 (|g|): <span id="gravityMagnitude">0</span> N/kg</p>
-            <p>距离太阳 (r): <span id="distanceToSun">0</span> 像素</p>
+        <div>
+            <label for="initialSpeedSlider">初始速度:</label>
+            <input type="range" id="initialSpeedSlider" min="5" max="25" step="1">
+            <span id="initialSpeedValue"></span>
         </div>
     </div>
 
-    <script>
-        // 获取Canvas元素及其2D渲染上下文
-        const canvas = document.getElementById('gravityCanvas');
-        const ctx = canvas.getContext('2d');
+    <div id="explanation">
+        <p><span class="color-g">重力 (G):</span> 恒定向下，使垂直速度 <span class="color-vy">Vy</span> 持续增加。</p>
+        <p><span class="color-vx">水平速度 (Vx):</span> 保持不变，因为没有水平方向的力。</p>
+        <p><span class="color-vy">垂直速度 (Vy):</span> 受重力影响而改变。向上时减小，向下时增大。</p>
+        <p><span class="color-v">合速度 (V):</span> 是 <span class="color-vx">Vx</span> 和 <span class="color-vy">Vy</span> 的矢量和。</p>
+    </div>
 
-        // 获取控制和信息显示元素
-        const visualScaleSlider = document.getElementById('visualScaleSlider');
-        const scaleValueDisplay = document.getElementById('scaleValueDisplay');
-        const gravityMagnitudeDisplay = document.getElementById('gravityMagnitude');
-        const distanceToSunDisplay = document.getElementById('distanceToSun');
-
-        // 设置Canvas尺寸
-        canvas.width = 800;
-        canvas.height = 600;
-
-        // 物理常量
-        const G = 6.674e-11; // 引力常数 (N·m²/kg²)
-        const M_sun = 1.989e30; // 太阳质量 (kg) - 近似值
-
-        // 太阳的属性
-        const sunRadius = 30; // 太阳的视觉半径
-        let sunX = canvas.width / 2;
-        let sunY = canvas.height / 2;
-
-        // 视觉缩放因子（将物理上的引力场强度映射到屏幕上的像素长度）
-        // 初始值和滑动条同步
-        let visualScale = parseFloat(visualScaleSlider.value);
-
-        // --- 绘图函数 ---
-
-        /**
-         * 绘制太阳
-         */
-        function drawSun() {
-            ctx.beginPath();
-            ctx.arc(sunX, sunY, sunRadius, 0, Math.PI * 2);
-            ctx.fillStyle = 'orange';
-            ctx.shadowColor = 'yellow';
-            ctx.shadowBlur = 20;
-            ctx.fill();
-            ctx.closePath();
-            // 恢复阴影设置，避免影响后续绘制
-            ctx.shadowColor = 'transparent';
-            ctx.shadowBlur = 0;
-
-            // 在太阳中心写字
-            ctx.fillStyle = 'white';
-            ctx.font = '16px Arial';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText('太阳', sunX, sunY);
-        }
-
-        /**
-         * 绘制一个带箭头的线
-         * @param {CanvasRenderingContext2D} context - Canvas的2D上下文
-         * @param {number} x1 - 起始点X坐标
-         * @param {number} y1 - 起始点Y坐标
-         * @param {number} x2 - 终点X坐标
-         * @param {number} y2 - 终点Y坐标
-         * @param {string} color - 箭头颜色
-         * @param {number} headLength - 箭头头部长度
-         */
-        function drawArrow(context, x1, y1, x2, y2, color, headLength = 10) {
-            context.strokeStyle = color;
-            context.fillStyle = color;
-            context.lineWidth = 2;
-            context.beginPath();
-            context.moveTo(x1, y1);
-            context.lineTo(x2, y2);
-            context.stroke();
-
-            // 绘制箭头头部
-            const angle = Math.atan2(y2 - y1, x2 - x1); // 计算线的角度
-            context.beginPath();
-            // 左侧箭头翼
-            context.moveTo(x2, y2);
-            context.lineTo(x2 - headLength * Math.cos(angle - Math.PI / 6), y2 - headLength * Math.sin(angle - Math.PI / 6));
-            // 右侧箭头翼
-            context.moveTo(x2, y2);
-            context.lineTo(x2 - headLength * Math.cos(angle + Math.PI / 6), y2 - headLength * Math.sin(angle + Math.PI / 6));
-            context.stroke();
-            context.closePath();
-        }
-
-        // --- 事件处理 ---
-
-        /**
-         * 处理鼠标移动事件
-         * @param {MouseEvent} event - 鼠标事件对象
-         */
-        canvas.addEventListener('mousemove', function(event) {
-            // 清空画布
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            // 重新绘制太阳
-            drawSun();
-
-            // 获取鼠标在Canvas内的坐标
-            const rect = canvas.getBoundingClientRect();
-            const mouseX = event.clientX - rect.left;
-            const mouseY = event.clientY - rect.top;
-
-            // 计算从鼠标位置指向太阳的矢量（引力场的方向）
-            const vecX = sunX - mouseX;
-            const vecY = sunY - mouseY;
-
-            // 计算鼠标位置到太阳的距离 (r)
-            const r = Math.sqrt(vecX * vecX + vecY * vecY);
-
-            // 如果鼠标在太阳内部，避免除以零和过大的引力场强度
-            const minDistance = sunRadius + 5; // 允许鼠标靠近太阳但不停留在内部
-            if (r < minDistance) {
-                // 如果在太近的地方，只更新距离信息，不绘制箭头
-                distanceToSunDisplay.textContent = r.toFixed(2);
-                gravityMagnitudeDisplay.textContent = '非常大 (太近)';
-                return;
-            }
-
-            // 计算引力场强度的大小 |g| = GM/r²
-            const g_magnitude = (G * M_sun) / (r * r);
-
-            // 根据引力场强度和视觉比例因子，计算箭头的实际像素长度
-            let arrowLength = g_magnitude * visualScale;
-
-            // 限制箭头的最大和最小长度，以保持视觉效果
-            const maxArrowLength = 100; // 箭头最大长度 (像素)
-            const minArrowLength = 5;   // 箭头最小长度 (像素)
-            arrowLength = Math.min(arrowLength, maxArrowLength);
-            arrowLength = Math.max(arrowLength, minArrowLength);
-
-
-            // 归一化方向矢量（单位矢量）
-            const unitVecX = vecX / r;
-            const unitVecY = vecY / r;
-
-            // 计算箭头的终点坐标
-            const arrowEndX = mouseX + unitVecX * arrowLength;
-            const arrowEndY = mouseY + unitVecY * arrowLength;
-
-            // 绘制引力场箭头
-            drawArrow(ctx, mouseX, mouseY, arrowEndX, arrowEndY, 'lightblue', 12);
-
-            // 更新显示信息
-            gravityMagnitudeDisplay.textContent = g_magnitude.toExponential(2); // 使用科学计数法
-            distanceToSunDisplay.textContent = r.toFixed(2);
-        });
-
-        // 处理滑动条变化事件
-        visualScaleSlider.addEventListener('input', function() {
-            visualScale = parseFloat(this.value);
-            scaleValueDisplay.textContent = visualScale.toExponential(1); // 更新显示值
-            // 触发一次mousemove事件以更新画布（如果鼠标还在画布上）
-            // 更好的做法是保存最后一次鼠标位置并调用一个统一的render函数
-            // 为了简单起见，这里忽略了在鼠标静止时更新
-        });
-        
-        // 初始绘制太阳
-        drawSun();
-        scaleValueDisplay.textContent = visualScale.toExponential(1); // 初始显示比例值
-    </script>
+    <script src="main.js"></script>
 </body>
 </html>
