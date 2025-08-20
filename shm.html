@@ -62,10 +62,10 @@
     <!-- 修改：运动学公式面板改为微分形式，并使用 MathML -->
     <div id="formulaExplanation">
         <h3>运动学公式 (微分形式推导)</h3>
-        <p>简谐运动 (SHM) 的核心在于系统存在一个总是指向平衡位置且大小与位移成正比的恢复力。以下是其微分形式的推导过程：</p>
+        <p>简谐运动 (SHM) 微分形式推导：</p>
 
         <p><b>1. 恢复力 (胡克定律):</b></p>
-        <p>弹簧的恢复力 <span class="color-force">F</span> 与其伸长量或压缩量（即位移 <mi>x</mi>）成正比，方向相反：</p>
+        <p>恢复力 <span class="color-force">F</span> 与位移 <mi>x</mi> 成正比，方向相反：</p>
         <math display="block">
             <mrow>
                 <mi>F</mi>
@@ -75,16 +75,14 @@
                 <mi>x</mi>
             </mrow>
         </math>
-        <p>其中 <mi>k</mi> 为弹簧常数，<mi>x</mi> 为振子相对于平衡位置的位移。</p>
+        <p><mi>k</mi> 为弹簧常数，<mi>x</mi> 为振子位移。</p>
 
         <p><b>2. 牛顿第二定律:</b></p>
-        <p>根据牛顿第二定律，物体所受的合力 <span class="color-force">F</span> 等于其质量 <mi>m</mi> 乘以加速度 <mi>a</mi>：
-        <math display="inline"><mrow><mi>F</mi><mo>=</mo><mi>m</mi><mi>a</mi></mrow></math>。</p>
-        <p>同时，加速度 <mi>a</mi> 是位置 <mi>x</mi> 对时间 <mi>t</mi> 的二阶导数：
+        <p>合力 <span class="color-force">F</span> = <mi>m</mi><mi>a</mi>。</p>
+        <p>加速度 <mi>a</mi> 是 <mi>x</mi> 对 <mi>t</mi> 的二阶导数：
         <math display="inline"><mrow><mi>a</mi><mo>=</mo><mfrac><mrow><msup><mi>d</mi><mn>2</mn></msup><mi>x</mi></mrow><mrow><mi>d</mi><msup><mi>t</mi><mn>2</mn></msup></mrow></mfrac></mrow></math>。</p>
 
         <p><b>3. 运动微分方程:</b></p>
-        <p>将恢复力（胡克定律）与牛顿第二定律结合，得到简谐运动的初始微分方程：</p>
         <math display="block">
             <mrow>
                 <mi>m</mi><mi>a</mi>
@@ -93,7 +91,7 @@
                 <mi>k</mi><mi>x</mi>
             </mrow>
         </math>
-        <p>代入 <mi>a</mi> 的表达式 <math display="inline"><mrow><mi>a</mi><mo>=</mo><mfrac><mrow><msup><mi>d</mi><mn>2</mn></msup><mi>x</mi></mrow><mrow><mi>d</mi><msup><mi>t</mi><mn>2</mn></msup></mrow></mfrac></mrow></math>：</p>
+        <p>代入 <mi>a</mi>：</p>
         <math display="block">
             <mrow>
                 <mi>m</mi>
@@ -119,7 +117,7 @@
                 <mi>x</mi>
             </mrow>
         </math>
-        <p>通常将其整理成标准形式，通过除以 <mi>m</mi> 并移项：</p>
+        <p>整理成标准形式：</p>
         <math display="block">
             <mrow>
                 <mfrac>
@@ -148,7 +146,7 @@
                 <mn>0</mn>
             </mrow>
         </math>
-        <p>此方程定义了简谐运动。为了简化，我们引入角频率 <mi>&omega;</mi>，其中 <math display="inline"><mrow><msup><mi>&omega;</mi><mn>2</mn></msup><mo>=</mo><mi>k</mi><mo>/</mo><mi>m</mi></mrow></math> (或 <math display="inline"><mrow><mi>&omega;</mi><mo>=</mo><msqrt><mrow><mi>k</mi><mo>/</mo><mi>m</mi></mrow></msqrt></mrow></math>)。</p>
+        <p>定义简谐运动。引入角频率 <mi>&omega;</mi>，其中 <math display="inline"><mrow><msup><mi>&omega;</mi><mn>2</mn></msup><mo>=</mo><mi>k</mi><mo>/</mo><mi>m</mi></mrow></math> (或 <math display="inline"><mrow><mi>&omega;</mi><mo>=</mo><msqrt><mrow><mi>k</mi><mo>/</mo><mi>m</mi></mrow></msqrt></mrow></math>)。</p>
         <p>最终形式：</p>
         <math display="block">
             <mrow>
