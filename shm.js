@@ -365,7 +365,7 @@ function handleMouseMove(event) {
         const maxCompressionDisplacement = Math.min(maxStretchDisplacement, equilibriumX - wallCollisionLimitX);
 
         // 计算允许拖拽到的绝对X坐标的上下限
-        const maxAllowedX = equilibriumX + L0;
+        const maxAllowedX = equilibriumX + L0 - massWidth / 2;
         const minAllowedX = equilibriumX - maxCompressionDisplacement; // 平衡位置 - 最大压缩位移
 
         let finalPositionX = desiredPositionX;
@@ -376,7 +376,7 @@ function handleMouseMove(event) {
         if (desiredPositionX > maxAllowedX) {
             finalPositionX = maxAllowedX; // 限制在最大拉伸边界上
             stopDrag = true;
-            message = "警告：拉伸量超过限制 (2倍墙壁到平衡位置的距离)，拖拽停止！";
+            message = "警告：拉伸量超过限制 (墙壁到平衡位置的距离)，拖拽停止！";
         } 
         // 然后检查压缩限制
         else if (desiredPositionX < minAllowedX) {
@@ -385,8 +385,6 @@ function handleMouseMove(event) {
             // 根据最终限制的位置判断是撞墙还是达到2*L0压缩极限
             if (Math.abs(finalPositionX - wallCollisionLimitX) < 0.001) { // 如果非常接近墙壁限制
                 message = "警告：振子不能穿透墙壁，拖拽停止！";
-            } else {
-                message = "警告：压缩量超过限制 (2倍墙壁到平衡位置的距离)，拖拽停止！";
             }
         }
         
