@@ -59,6 +59,8 @@ const maxArrowLength = 200; // 动态箭头的最大长度
 const arrowLabelFixedYOffset = -5; // 箭头标签固定的Y方向偏移量 (负值表示在箭头上方)
 const arrowLabelMagnitudeXOffset = 10; // 箭头标签X方向偏移的绝对值
 
+// --- 新增：箭头绘制阈值 ---
+const ARROW_DRAW_THRESHOLD = 0.001; // 如果力的绝对值小于此阈值，则不绘制箭头
 
 // --- 辅助函数：绘制弹簧 ---
 function drawSpring(startX, endX, y) {
@@ -112,11 +114,9 @@ function resetSimulation(resetParams = true) {
     // 拖拽的默认起始位置
     positionX = equilibriumX + massWidth / 2 + 100; // 从平衡位置稍微向右一点开始
     velocityX = 0;
-    // <--- 关键修改开始 --->
     // 在这里根据新的 positionX 计算初始加速度
     const initialDisplacement = positionX - equilibriumX;
     accelerationX = -(springConstant / mass) * initialDisplacement;
-    // <--- 关键修改结束 --->
 
     draw(); // 绘制初始状态
     updateDataDisplay(); // 更新初始状态的数据显示
@@ -219,47 +219,56 @@ function draw() {
 
     // 绘制力箭头 (F = ma)
     const force = mass * accelerationX;
-    const forceDir = Math.sign(force); // 方向：1 (右), -1 (左), 0 (无)
-    // 确保即使力为0，箭头也有一个最小的视觉长度
-    const forceArrowLength = Math.min(Math.max(2, Math.abs(force) * forceScale), maxArrowLength);
-    drawArrow(
-        ctx,
-        positionX, springAttachY + 20, // 箭头起点：质量块下方
-        positionX + forceDir * forceArrowLength, springAttachY + 20, // 箭头终点
-        '#dc3545', 2,
-        arrowHeadSize, arrowHeadAngle,
-        'F', // 标签
-        forceDir * arrowLabelMagnitudeXOffset, // 标签X偏移，根据方向调整
-        arrowLabelFixedYOffset // 标签Y偏移，固定值
-    );
+    // 当力的绝对值大于阈值时才绘制箭头
+    if (Math.abs(force) > ARROW_DRAW_THRESHOLD) {
+        const forceDir = Math.sign(force); // 方向：1 (右), -1 (左), 0 (无)
+        const forceArrowLength = Math.min(Math.max(2, Math.abs(force) * forceScale), maxArrowLength); // 确保即使力为0，箭头也有一个最小的视觉长度
+        drawArrow(
+            ctx,
+            positionX, springAttachY + 20, // 箭头起点：质量块下方
+            positionX + forceDir * forceArrowLength, springAttachY + 20, // 箭头终点
+            '#dc3545', 2,
+            arrowHeadSize, arrowHeadAngle,
+            'F', // 标签
+            forceDir * arrowLabelMagnitudeXOffset, // 标签X偏移，根据方向调整
+            arrowLabelFixedYOffset // 标签Y偏移，固定值
+        );
+    }
+
 
     // 绘制速度箭头
-    const velocityDir = Math.sign(velocityX); // 方向：1 (右), -1 (左), 0 (无)
-    const velocityArrowLength = Math.min(Math.max(2, Math.abs(velocityX) * velocityScale), maxArrowLength);
-    drawArrow(
-        ctx,
-        positionX, springAttachY - 20, // 箭头起点：质量块上方
-        positionX + velocityDir * velocityArrowLength, springAttachY - 20, // 箭头终点
-        '#28a745', 2,
-        arrowHeadSize, arrowHeadAngle,
-        'v', // 标签 (小写)
-        velocityDir * arrowLabelMagnitudeXOffset, // 标签X偏移，根据方向调整
-        arrowLabelFixedYOffset // 标签Y偏移，固定值
-    );
+    // 当速度的绝对值大于阈值时才绘制箭头
+    if (Math.abs(velocityX) > ARROW_DRAW_THRESHOLD) {
+        const velocityDir = Math.sign(velocityX); // 方向：1 (右), -1 (左), 0 (无)
+        const velocityArrowLength = Math.min(Math.max(2, Math.abs(velocityX) * velocityScale), maxArrowLength);
+        drawArrow(
+            ctx,
+            positionX, springAttachY - 20, // 箭头起点：质量块上方
+            positionX + velocityDir * velocityArrowLength, springAttachY - 20, // 箭头终点
+            '#28a745', 2,
+            arrowHeadSize, arrowHeadAngle,
+            'v', // 标签 (小写)
+            velocityDir * arrowLabelMagnitudeXOffset, // 标签X偏移，根据方向调整
+            arrowLabelFixedYOffset // 标签Y偏移，固定值
+        );
+    }
 
     // 绘制加速度箭头
-    const accelerationDir = Math.sign(accelerationX); // 方向：1 (右), -1 (左), 0 (无)
-    const accelerationArrowLength = Math.min(Math.max(2, Math.abs(accelerationX) * accelerationScale), maxArrowLength);
-    drawArrow(
-        ctx,
-        positionX, springAttachY, // 箭头起点：质量块中心
-        positionX + accelerationDir * accelerationArrowLength, springAttachY, // 箭头终点
-        '#ffc107', 2,
-        arrowHeadSize, arrowHeadAngle,
-        'a', // 标签 (小写)
-        accelerationDir * arrowLabelMagnitudeXOffset, // 标签X偏移，根据方向调整
-        arrowLabelFixedYOffset // 标签Y偏移，固定值
-    );
+    // 当加速度的绝对值大于阈值时才绘制箭头
+    if (Math.abs(accelerationX) > ARROW_DRAW_THRESHOLD) {
+        const accelerationDir = Math.sign(accelerationX); // 方向：1 (右), -1 (左), 0 (无)
+        const accelerationArrowLength = Math.min(Math.max(2, Math.abs(accelerationX) * accelerationScale), maxArrowLength);
+        drawArrow(
+            ctx,
+            positionX, springAttachY, // 箭头起点：质量块中心
+            positionX + accelerationDir * accelerationArrowLength, springAttachY, // 箭头终点
+            '#ffc107', 2,
+            arrowHeadSize, arrowHeadAngle,
+            'a', // 标签 (小写)
+            accelerationDir * arrowLabelMagnitudeXOffset, // 标签X偏移，根据方向调整
+            arrowLabelFixedYOffset // 标签Y偏移，固定值
+        );
+    }
 
     updateDataDisplay();
 }
@@ -310,7 +319,7 @@ function handleMouseDown(event) {
     // 检查鼠标是否在质量块的边界内
     if (mousePos.x > massLeft && mousePos.x < massRight &&
         mousePos.y > massTop && mousePos.y < massBottom) {
-        
+
         isDragging = true;
         cancelAnimationFrame(animationFrameId); // 拖拽时停止动画
         isAnimating = false;
@@ -329,10 +338,9 @@ function handleMouseMove(event) {
         // 根据鼠标X更新质量块位置，保持偏移量
         // 确保质量块不会穿过墙壁
         positionX = Math.max(wallWidth + massWidth / 2, mousePos.x - dragOffsetX);
-        // <--- 额外改进：拖拽时实时更新加速度，让箭头和数值及时反映 --->
+        // 额外改进：拖拽时实时更新加速度，让箭头和数值及时反映
         const currentDisplacement = positionX - equilibriumX;
         accelerationX = -(springConstant / mass) * currentDisplacement;
-        // <--- 额外改进结束 --->
         draw(); // 立即重绘以显示拖拽效果
     }
 }
@@ -341,10 +349,9 @@ function handleMouseUp() {
     if (isDragging) {
         isDragging = false;
         infoDiv.textContent = "点击画布开始模拟。";
-        // <--- 确保拖拽结束后加速度值正确 --->
+        // 确保拖拽结束后加速度值正确
         const currentDisplacement = positionX - equilibriumX;
         accelerationX = -(springConstant / mass) * currentDisplacement;
-        // <--- 结束 --->
         draw(); // 拖拽后的最终绘制
         updateDataDisplay(); // 根据最终拖拽位置更新数据
     }
