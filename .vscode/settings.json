@@ -1,0 +1,10 @@
+{
+    // 控制编辑器是否将 Tab 字符转换为空格
+    "editor.insertSpaces": true,
+    // 一个 Tab 等于的空格数
+    "editor.tabSize": 4,
+    // 保存时将 Tab 转换为空格
+    "editor.convertTabsToSpaces": true,
+    // 控制在粘贴时是否自动将 Tab 转换为空格
+    "editor.pasteActions.enabled": true
+}

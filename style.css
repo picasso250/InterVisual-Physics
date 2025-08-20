@@ -1,4 +1,3 @@
-
 /* 确保页面和Canvas全屏显示 */
 html, body {
     margin: 0;
@@ -101,6 +100,7 @@ canvas {
     font-weight: bold;
 }
 
+/* 现有解释面板 */
 #explanation {
     position: absolute;
     top: 20px; /* 移到左上角 */
@@ -129,3 +129,94 @@ canvas {
 .color-vy { color: #28a745; font-weight: bold; } /* 绿色 */
 .color-g { color: #6c757d; font-weight: bold; } /* 灰色 */
 .color-v { color: #555555; font-weight: bold; } /* 合速度的颜色 */
+
+/* 新增：实时数据展示面板 */
+#dataDisplay {
+    position: absolute;
+    bottom: 20px; /* 定位在左下角 */
+    left: 20px;
+    background-color: rgba(255, 255, 255, 0.85);
+    padding: 15px;
+    border-radius: 8px;
+    color: #333;
+    font-size: 0.9em;
+    max-width: 250px;
+    /* line-height: 1.5; */ /* Removed as table cells manage their own height better */
+    user-select: none;
+    z-index: 10;
+    transition: all 0.3s ease-in-out; /* Added transition for smooth movement */
+    visibility: hidden;
+}
+
+/* New style for dataDisplay when in time reversal mode */
+#dataDisplay.top-right {
+    top: 20px;
+    bottom: auto; /* Override bottom positioning */
+    left: auto; /* Override left positioning */
+    right: 20px; /* Move to the right */
+    visibility: visible;
+}
+
+/* --- Start: Modified #dataDisplay internal styling for table --- */
+#dataDisplay table {
+    width: 100%; /* Make table take full width of its container */
+    border-collapse: collapse; /* Remove space between table cells */
+}
+
+#dataDisplay td {
+    padding: 4px 0; /* Vertical spacing for each row */
+    white-space: nowrap; /* Prevent text wrapping in cells */
+}
+
+#dataDisplay td:first-child {
+    text-align: right; /* Left column (labels) right-aligned */
+    padding-right: 10px; /* Space between label and value */
+}
+
+#dataDisplay td:last-child {
+    text-align: right;
+}
+/* --- End: Modified #dataDisplay internal styling for table --- */
+
+/* The span styles are kept as they are still useful for applying color and boldness */
+#dataDisplay span {
+    font-weight: bold;
+}
+
+
+/* 新增：运动学公式面板 */
+#formulaExplanation {
+    position: absolute;
+    bottom: 20px; /* 定位在右下角 */
+    right: 20px;
+    background-color: rgba(255, 255, 255, 0.85);
+    padding: 15px;
+    border-radius: 8px;
+    color: #333;
+    font-size: 0.85em; /* 稍微小一点，避免占据太多空间 */
+    max-width: 380px; /* 允许更宽，以便公式展示 */
+    line-height: 1.6; /* 增加行高，提升可读性 */
+    user-select: none;
+    z-index: 10;
+    transition: opacity 0.3s ease-in-out;
+}
+
+#formulaExplanation h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    text-align: center;
+    color: #555;
+}
+
+#formulaExplanation p {
+    margin: 3px 0;
+}
+
+/* 公式中的下标和上标样式 */
+#formulaExplanation sup, #formulaExplanation sub {
+    font-size: 0.7em; /* 更小的下标和上标 */
+    vertical-align: super;
+}
+#formulaExplanation sub {
+    vertical-align: sub;
+}
