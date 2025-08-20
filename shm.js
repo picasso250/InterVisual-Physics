@@ -34,7 +34,7 @@ const dt = 0.05; // 模拟的时间步长 (每帧秒数)
 
 // --- 模拟常量 ---
 const floorY = canvas.height * 0.7; // 地面/地板的Y坐标
-const equilibriumXOffset = 200; // 距离左墙壁的平衡位置偏移量
+// const equilibriumXOffset = 200; // 距离左墙壁的平衡位置偏移量 // 已移除，平衡位置现在基于屏幕宽度
 let equilibriumX; // 平衡位置的绝对X坐标
 const wallWidth = 20;
 const wallHeight = 200;
@@ -49,17 +49,17 @@ let isDragging = false; // 质量块是否正在被拖拽
 let dragOffsetX; // 拖拽时鼠标指针到质量块中心的偏移量
 let animationFrameId; // 存储 requestAnimationFrame 的ID
 
-// --- 箭头绘图参数 (现在这些是局部于shm.js，因为它们是shm.js特有的箭头样式) ---
+// --- 箭头绘图参数 ---
 const arrowHeadSize = 8;
 const arrowHeadAngle = Math.PI / 6;
 const forceScale = 0.5; // 力箭头长度的比例
 const velocityScale = 0.5; // 速度箭头长度的比例
 const accelerationScale = 2; // 加速度箭头长度的比例
-const maxArrowLength = 200; // 动态箭头的最大长度
+const maxArrowLength = 600; // 动态箭头的最大长度
 const arrowLabelFixedYOffset = -5; // 箭头标签固定的Y方向偏移量 (负值表示在箭头上方)
 const arrowLabelMagnitudeXOffset = 10; // 箭头标签X方向偏移的绝对值
 
-// --- 新增：箭头绘制阈值 ---
+// --- 箭头绘制阈值 ---
 const ARROW_DRAW_THRESHOLD = 0.001; // 如果力的绝对值小于此阈值，则不绘制箭头
 
 // --- 辅助函数：绘制弹簧 ---
@@ -93,7 +93,8 @@ function drawSpring(startX, endX, y) {
 function resizeCanvas() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-    equilibriumX = wallWidth + equilibriumXOffset;
+    // 更新：平衡线应该在屏幕1/3处
+    equilibriumX = canvas.width / 3;
     resetSimulation(false); // 重置，但不重新初始化物理参数
 }
 
@@ -111,10 +112,20 @@ function resetSimulation(resetParams = true) {
         springConstant = parseFloat(springConstantSlider.value);
     }
 
-    // 拖拽的默认起始位置
-    positionX = equilibriumX + massWidth / 2 + 100; // 从平衡位置稍微向右一点开始
+    // 设置拖拽的默认起始位置，确保在合理范围内
+    const L0 = equilibriumX - wallWidth; // 弹簧的自然长度 (墙壁到平衡位置的距离)
+    // 初始位置设为平衡位置右侧，或平衡位置与墙壁距离的某个比例 (避免初始化时就超出拖拽限制)
+    if (L0 > 0) {
+        positionX = equilibriumX + Math.min(100, 0.5 * L0); // 初始位移为100px或0.5*L0，取较小值
+    } else { 
+        positionX = equilibriumX + 50; // 备用值
+    }
+    
+    // 确保初始位置不会让质量块穿透墙壁
+    positionX = Math.max(positionX, wallWidth + massWidth / 2);
+
     velocityX = 0;
-    // 在这里根据新的 positionX 计算初始加速度
+    // 根据新的 positionX 计算初始加速度
     const initialDisplacement = positionX - equilibriumX;
     accelerationX = -(springConstant / mass) * initialDisplacement;
 
@@ -222,7 +233,7 @@ function draw() {
     // 当力的绝对值大于阈值时才绘制箭头
     if (Math.abs(force) > ARROW_DRAW_THRESHOLD) {
         const forceDir = Math.sign(force); // 方向：1 (右), -1 (左), 0 (无)
-        const forceArrowLength = Math.min(Math.max(2, Math.abs(force) * forceScale), maxArrowLength); // 确保即使力为0，箭头也有一个最小的视觉长度
+        const forceArrowLength = Math.min(Math.max(2, Math.abs(force) * forceScale), maxArrowLength); 
         drawArrow(
             ctx,
             positionX, springAttachY + 20, // 箭头起点：质量块下方
@@ -234,7 +245,6 @@ function draw() {
             arrowLabelFixedYOffset // 标签Y偏移，固定值
         );
     }
-
 
     // 绘制速度箭头
     // 当速度的绝对值大于阈值时才绘制箭头
@@ -297,7 +307,11 @@ function update() {
 function animate() {
     update();
     draw();
-    animationFrameId = requestAnimationFrame(animate);
+
+    // 只有当模拟正在进行时，才请求下一帧
+    if (isAnimating) { // <-- 添加这个条件判断
+        animationFrameId = requestAnimationFrame(animate);
+    }
 }
 
 // --- 鼠标拖拽事件处理 ---
@@ -324,7 +338,7 @@ function handleMouseDown(event) {
         cancelAnimationFrame(animationFrameId); // 拖拽时停止动画
         isAnimating = false;
         velocityX = 0; // 拖拽开始时重置速度
-        accelerationX = 0; // 拖拽时暂时设为0，或者在mouseUp时重新计算
+        accelerationX = 0; // 拖拽时暂时设为0
         time = 0; // 如果设置新的初始条件，则重置时间
         dragOffsetX = mousePos.x - positionX; // 计算从质量块中心到鼠标指针的偏移量
 
@@ -335,13 +349,60 @@ function handleMouseDown(event) {
 function handleMouseMove(event) {
     if (isDragging) {
         const mousePos = getMousePos(event);
-        // 根据鼠标X更新质量块位置，保持偏移量
-        // 确保质量块不会穿过墙壁
-        positionX = Math.max(wallWidth + massWidth / 2, mousePos.x - dragOffsetX);
-        // 额外改进：拖拽时实时更新加速度，让箭头和数值及时反映
-        const currentDisplacement = positionX - equilibriumX;
-        accelerationX = -(springConstant / mass) * currentDisplacement;
-        draw(); // 立即重绘以显示拖拽效果
+        let desiredPositionX = mousePos.x - dragOffsetX;
+
+        // L0: 弹簧的自然长度 (从墙壁到平衡位置的距离)
+        const L0 = equilibriumX - wallWidth;
+
+        // 质量块中心能够到达的最左侧位置（刚好碰到墙壁）
+        const wallCollisionLimitX = wallWidth + massWidth / 2;
+
+        // 计算最大拉伸位移（从平衡位置开始计算）
+        const maxStretchDisplacement = 2 * L0;
+
+        // 计算最大压缩位移（从平衡位置开始计算）
+        // 这是关键：最大压缩位移必须是 (2 * L0) 和 (平衡位置到墙壁接触点的距离) 中的最小值
+        const maxCompressionDisplacement = Math.min(maxStretchDisplacement, equilibriumX - wallCollisionLimitX);
+
+        // 计算允许拖拽到的绝对X坐标的上下限
+        const maxAllowedX = equilibriumX + L0;
+        const minAllowedX = equilibriumX - maxCompressionDisplacement; // 平衡位置 - 最大压缩位移
+
+        let finalPositionX = desiredPositionX;
+        let stopDrag = false;
+        let message = "";
+
+        // 首先检查拉伸限制
+        if (desiredPositionX > maxAllowedX) {
+            finalPositionX = maxAllowedX; // 限制在最大拉伸边界上
+            stopDrag = true;
+            message = "警告：拉伸量超过限制 (2倍墙壁到平衡位置的距离)，拖拽停止！";
+        } 
+        // 然后检查压缩限制
+        else if (desiredPositionX < minAllowedX) {
+            finalPositionX = minAllowedX; // 限制在最大压缩边界上
+            stopDrag = true;
+            // 根据最终限制的位置判断是撞墙还是达到2*L0压缩极限
+            if (Math.abs(finalPositionX - wallCollisionLimitX) < 0.001) { // 如果非常接近墙壁限制
+                message = "警告：振子不能穿透墙壁，拖拽停止！";
+            } else {
+                message = "警告：压缩量超过限制 (2倍墙壁到平衡位置的距离)，拖拽停止！";
+            }
+        }
+        
+        positionX = finalPositionX; // 应用最终确定的位置
+
+        if (stopDrag) {
+            isDragging = false;
+            infoDiv.textContent = message;
+            velocityX = 0; // 停止物理运动
+            accelerationX = 0;
+        } else {
+            // 只有当拖拽继续时才更新加速度
+            const currentDisplacement = positionX - equilibriumX;
+            accelerationX = -(springConstant / mass) * currentDisplacement;
+        }
+        draw(); // 立即重绘以显示拖拽效果或限制后的位置
     }
 }
 
