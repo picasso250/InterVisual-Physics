@@ -228,8 +228,9 @@ function draw() {
     ctx.lineWidth = 2;
     ctx.strokeRect(positionX - massWidth / 2, floorY - massHeight, massWidth, massHeight);
 
-    // 绘制力箭头 (F = ma)
-    const force = mass * accelerationX;
+    // 绘制力箭头 (F = -kx)
+    const displacementForForce = positionX - equilibriumX; // 使用当前的 positionX 计算位移
+    const force = -springConstant * displacementForForce; // 直接根据当前位移计算力
     // 当力的绝对值大于阈值时才绘制箭头
     if (Math.abs(force) > ARROW_DRAW_THRESHOLD) {
         const forceDir = Math.sign(force); // 方向：1 (右), -1 (左), 0 (无)
@@ -361,7 +362,6 @@ function handleMouseMove(event) {
         const maxStretchDisplacement = 2 * L0;
 
         // 计算最大压缩位移（从平衡位置开始计算）
-        // 这是关键：最大压缩位移必须是 (2 * L0) 和 (平衡位置到墙壁接触点的距离) 中的最小值
         const maxCompressionDisplacement = Math.min(maxStretchDisplacement, equilibriumX - wallCollisionLimitX);
 
         // 计算允许拖拽到的绝对X坐标的上下限
@@ -376,8 +376,8 @@ function handleMouseMove(event) {
         if (desiredPositionX > maxAllowedX) {
             finalPositionX = maxAllowedX; // 限制在最大拉伸边界上
             stopDrag = true;
-            message = "警告：拉伸量超过限制 (墙壁到平衡位置的距离)，拖拽停止！";
-        } 
+            message = "警告：拉伸量超过限制，拖拽停止！";
+        }
         // 然后检查压缩限制
         else if (desiredPositionX < minAllowedX) {
             finalPositionX = minAllowedX; // 限制在最大压缩边界上
@@ -390,15 +390,15 @@ function handleMouseMove(event) {
         
         positionX = finalPositionX; // 应用最终确定的位置
 
+        // --- 核心修改在这里：无论是否停止拖拽，都应该根据当前位置计算加速度 ---
+        const currentDisplacement = positionX - equilibriumX;
+        accelerationX = -(springConstant / mass) * currentDisplacement;
+
         if (stopDrag) {
             isDragging = false;
             infoDiv.textContent = message;
             velocityX = 0; // 停止物理运动
-            accelerationX = 0;
-        } else {
-            // 只有当拖拽继续时才更新加速度
-            const currentDisplacement = positionX - equilibriumX;
-            accelerationX = -(springConstant / mass) * currentDisplacement;
+            // 不再设置 accelerationX = 0; 让它保持实际值
         }
         draw(); // 立即重绘以显示拖拽效果或限制后的位置
     }
