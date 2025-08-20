@@ -55,7 +55,10 @@ const arrowHeadAngle = Math.PI / 6;
 const forceScale = 0.5; // 力箭头长度的比例
 const velocityScale = 10; // 速度箭头长度的比例
 const accelerationScale = 10; // 加速度箭头长度的比例
-const maxArrowLength = 100; // 动态箭头的最大长度
+const maxArrowLength = 200; // 动态箭头的最大长度
+const arrowLabelFixedYOffset = -5; // 箭头标签固定的Y方向偏移量 (负值表示在箭头上方)
+const arrowLabelMagnitudeXOffset = 10; // 箭头标签X方向偏移的绝对值
+
 
 // --- 辅助函数：绘制弹簧 ---
 function drawSpring(startX, endX, y) {
@@ -200,52 +203,47 @@ function draw() {
 
     // 绘制力箭头 (F = ma)
     const force = mass * accelerationX;
-    const forceArrowLength = Math.min(Math.abs(force) * forceScale, maxArrowLength);
-    if (forceArrowLength > 0.1) {
-        const forceDir = Math.sign(force);
-        drawArrow(
-            ctx, // <-- 新增 ctx 参数
-            positionX, springAttachY + 20, // 箭头起点：质量块下方
-            positionX + forceDir * forceArrowLength, springAttachY + 20, // 箭头终点
-            '#dc3545', 2,
-            arrowHeadSize, arrowHeadAngle, // <-- 新增头部参数
-            'F', // 标签
-            forceDir * 10, // 标签X偏移
-            (forceDir === 1 ? -15 : 15) // 标签Y偏移 (根据方向调整)
-        );
-    }
+    const forceDir = Math.sign(force); // 方向：1 (右), -1 (左), 0 (无)
+    // 确保即使力为0，箭头也有一个最小的视觉长度
+    const forceArrowLength = Math.min(Math.max(2, Math.abs(force) * forceScale), maxArrowLength);
+    drawArrow(
+        ctx,
+        positionX, springAttachY + 20, // 箭头起点：质量块下方
+        positionX + forceDir * forceArrowLength, springAttachY + 20, // 箭头终点
+        '#dc3545', 2,
+        arrowHeadSize, arrowHeadAngle,
+        'F', // 标签
+        forceDir * arrowLabelMagnitudeXOffset, // 标签X偏移，根据方向调整
+        arrowLabelFixedYOffset // 标签Y偏移，固定值
+    );
 
     // 绘制速度箭头
-    const velocityArrowLength = Math.min(Math.abs(velocityX) * velocityScale, maxArrowLength);
-    if (velocityArrowLength > 0.1) {
-        const velocityDir = Math.sign(velocityX);
-        drawArrow(
-            ctx, // <-- 新增 ctx 参数
-            positionX, springAttachY - 20, // 箭头起点：质量块上方
-            positionX + velocityDir * velocityArrowLength, springAttachY - 20, // 箭头终点
-            '#28a745', 2,
-            arrowHeadSize, arrowHeadAngle, // <-- 新增头部参数
-            'V', // 标签
-            velocityDir * 10, // 标签X偏移
-            (velocityDir === 1 ? -15 : 15) // 标签Y偏移
-        );
-    }
+    const velocityDir = Math.sign(velocityX); // 方向：1 (右), -1 (左), 0 (无)
+    const velocityArrowLength = Math.min(Math.max(2, Math.abs(velocityX) * velocityScale), maxArrowLength);
+    drawArrow(
+        ctx,
+        positionX, springAttachY - 20, // 箭头起点：质量块上方
+        positionX + velocityDir * velocityArrowLength, springAttachY - 20, // 箭头终点
+        '#28a745', 2,
+        arrowHeadSize, arrowHeadAngle,
+        'v', // 标签 (小写)
+        velocityDir * arrowLabelMagnitudeXOffset, // 标签X偏移，根据方向调整
+        arrowLabelFixedYOffset // 标签Y偏移，固定值
+    );
 
     // 绘制加速度箭头
-    const accelerationArrowLength = Math.min(Math.abs(accelerationX) * accelerationScale, maxArrowLength);
-    if (accelerationArrowLength > 0.1) {
-        const accelerationDir = Math.sign(accelerationX);
-        drawArrow(
-            ctx, // <-- 新增 ctx 参数
-            positionX, springAttachY, // 箭头起点：质量块中心
-            positionX + accelerationDir * accelerationArrowLength, springAttachY, // 箭头终点
-            '#ffc107', 2,
-            arrowHeadSize, arrowHeadAngle, // <-- 新增头部参数
-            'A', // 标签
-            accelerationDir * 10, // 标签X偏移
-            (accelerationDir === 1 ? -15 : 15) // 标签Y偏移
-        );
-    }
+    const accelerationDir = Math.sign(accelerationX); // 方向：1 (右), -1 (左), 0 (无)
+    const accelerationArrowLength = Math.min(Math.max(2, Math.abs(accelerationX) * accelerationScale), maxArrowLength);
+    drawArrow(
+        ctx,
+        positionX, springAttachY, // 箭头起点：质量块中心
+        positionX + accelerationDir * accelerationArrowLength, springAttachY, // 箭头终点
+        '#ffc107', 2,
+        arrowHeadSize, arrowHeadAngle,
+        'a', // 标签 (小写)
+        accelerationDir * arrowLabelMagnitudeXOffset, // 标签X偏移，根据方向调整
+        arrowLabelFixedYOffset // 标签Y偏移，固定值
+    );
 
     updateDataDisplay();
 }
