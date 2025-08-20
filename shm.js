@@ -53,8 +53,8 @@ let animationFrameId; // 存储 requestAnimationFrame 的ID
 const arrowHeadSize = 8;
 const arrowHeadAngle = Math.PI / 6;
 const forceScale = 0.5; // 力箭头长度的比例
-const velocityScale = 10; // 速度箭头长度的比例
-const accelerationScale = 10; // 加速度箭头长度的比例
+const velocityScale = 0.5; // 速度箭头长度的比例
+const accelerationScale = 2; // 加速度箭头长度的比例
 const maxArrowLength = 200; // 动态箭头的最大长度
 const arrowLabelFixedYOffset = -5; // 箭头标签固定的Y方向偏移量 (负值表示在箭头上方)
 const arrowLabelMagnitudeXOffset = 10; // 箭头标签X方向偏移的绝对值
