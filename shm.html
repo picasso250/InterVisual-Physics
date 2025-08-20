@@ -4,17 +4,59 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>简谐运动模拟</title>
-    <link rel="stylesheet" href="../common/common.css">
+    <link rel="stylesheet" href="common.css">
     <link rel="stylesheet" href="shm.css">
 </head>
 <body>
     <canvas id="shmCanvas"></canvas>
-    <div id="info">简谐运动模拟 (开发中...)</div>
+    <div id="info">拖拽振子设置初始位置，点击画布开始模拟。</div>
 
-    <!-- 这里将放置简谐运动的控制面板、数据展示等元素 -->
     <div id="controls">
         <h3>简谐运动控制</h3>
-        <p>未来这里会有滑动条和参数设置。</p>
+        <div>
+            <label for="massSlider">质量 (m):</label>
+            <input type="range" id="massSlider" min="0.5" max="10" step="0.1">
+            <span id="massValue"></span> kg
+        </div>
+        <div>
+            <label for="springConstantSlider">弹簧常数 (k):</label>
+            <input type="range" id="springConstantSlider" min="0.1" max="10" step="0.1">
+            <span id="springConstantValue"></span> N/m
+        </div>
+        <button id="resetButton">重置</button>
+    </div>
+
+    <div id="dataDisplay">
+        <table>
+            <tr>
+                <td>时间 (t):</td>
+                <td><span id="timeValue">0.00</span> s</td>
+            </tr>
+            <tr>
+                <td>位置 (X):</td>
+                <td><span id="positionValue">0.00</span> m</td>
+            </tr>
+            <tr>
+                <td>速度 (V):</td>
+                <td><span id="velocityValue">0.00</span> m/s</td>
+            </tr>
+            <tr>
+                <td>加速度 (A):</td>
+                <td><span id="accelerationValue">0.00</span> m/s²</td>
+            </tr>
+            <tr>
+                <td>动能 (KE):</td>
+                <td><span id="kineticEnergyValue">0.00</span> J</td>
+            </tr>
+            <tr>
+                <td>势能 (PE):</td>
+                <td><span id="potentialEnergyValue">0.00</span> J</td>
+            </tr>
+            <tr>
+                <td>总能量 (TE):</td>
+                <td><span id="totalEnergyValue">0.00</span> J</td>
+            </tr>
+        </table>
     </div>
 
     <script src="shm.js"></script>
