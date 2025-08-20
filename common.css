@@ -1,0 +1,23 @@
+/* my_physics_simulations/common/common.css */
+
+/* 确保页面和Canvas全屏显示 */
+html, body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden; /* 防止滚动条出现 */
+    background-color: #f8f8f8; /* 几乎白色背景 */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* 更现代的字体 */
+    color: #333; /* 深色文本，适配浅色背景 */
+}
+
+/* Canvas 的基本样式，所有模拟的Canvas都可以共用 */
+canvas {
+    display: block; /* 移除Canvas底部可能出现的额外空白 */
+    background-color: #ffffff; /* 纯白色作为Canvas背景 */
+}
+
+/* 通用的隐藏辅助类 */
+.hidden {
+    opacity: 0;
+    pointer-events: none; /* Prevent interaction when hidden */
+}

@@ -3,141 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>重力抛物线小球</title>
-    <link rel="stylesheet" href="style.css">
-    <!-- 如果需要更广泛的兼容性，可以考虑引入 MathJax 或 KaTeX -->
-    <!-- 例如：
-    <script type="text/javascript" async
-      src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML">
-    </script>
-    -->
+    <title>我的物理模拟</title>
+    <link rel="stylesheet" href="common.css"> <!-- 引入公共样式 -->
+    <style>
+        /* index.html 自身的样式 */
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh; /* 确保内容居中在整个视口 */
+            background-color: #f0f0f0;
+            overflow: auto; /* Allow scroll if content is too long */
+        }
+        .container {
+            background-color: #fff;
+            padding: 30px 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 600px;
+            width: 90%;
+            margin: 20px; /* Add some margin for smaller screens */
+        }
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 25px;
+            font-size: 2.2em;
+        }
+        .simulation-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .simulation-list li {
+            margin-bottom: 15px;
+        }
+        .simulation-list li a {
+            display: block;
+            padding: 15px 25px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            box-shadow: 0 2px 8px rgba(0, 123, 255, 0.2);
+        }
+        .simulation-list li a:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+        }
+        .simulation-list li a:active {
+            transform: translateY(0);
+            box-shadow: 0 1px 4px rgba(0, 123, 255, 0.2);
+        }
+    </style>
 </head>
 <body>
-    <canvas id="gravityCanvas"></canvas>
-    <div id="info">点击开始</div>
-
-    <div id="controls">
-        <div>
-            <label for="gravitySlider">重力:</label>
-            <input type="range" id="gravitySlider" min="0.05" max="0.5" step="0.01">
-            <span id="gravityValue"></span>
-        </div>
-        <div>
-            <label for="initialSpeedSlider">初始速度:</label>
-            <input type="range" id="initialSpeedSlider" min="5" max="25" step="1">
-            <span id="initialSpeedValue"></span>
-        </div>
+    <div class="container">
+        <h1>我的物理模拟</h1>
+        <p>探索各种物理现象的互动可视化。</p>
+        <ul class="simulation-list">
+            <li><a href="projectile_motion.html">抛体运动模拟</a></li>
+            <li><a href="shm.html">简谐运动模拟 (待创建)</a></li>
+            <!-- 未来添加更多模拟的链接 -->
+        </ul>
     </div>
-
-    <!-- 修改：实时数据展示面板使用表格结构 -->
-    <div id="dataDisplay">
-        <table>
-            <tr>
-                <td>时间 (t):</td>
-                <td><span id="timeValue" class="color-g">0.0</span></td>
-            </tr>
-            <tr>
-                <td>水平速度 (Vx):</td>
-                <td><span id="vxValue" class="color-vx">0.00</span></td>
-            </tr>
-            <tr>
-                <td>垂直速度 (Vy):</td>
-                <td><span id="vyValue" class="color-vy">0.00</span></td>
-            </tr>
-            <tr>
-                <td>合速度 (V):</td>
-                <td><span id="vValue" class="color-v">0.00</span></td>
-            </tr>
-            <tr>
-                <td>高度 (H):</td>
-                <td><span id="heightValue">0.00</span></td>
-            </tr>
-            <tr>
-                <td>水平距离 (X):</td>
-                <td><span id="distanceValue">0.00</span></td>
-            </tr>
-            <tr>
-                <td>重力 (G):</td>
-                <td><span id="gravityDisplayValue" class="color-g">0.00</span></td>
-            </tr>
-        </table>
-    </div>
-
-    <div id="explanation">
-        <p><span class="color-g">重力 (G):</span> 恒定向下，使垂直速度 <span class="color-vy">Vy</span> 持续增加。</p>
-        <p><span class="color-vx">水平速度 (Vx):</span> 保持不变，因为没有水平方向的力。</p>
-        <p><span class="color-vy">垂直速度 (Vy):</span> 受重力影响而改变。向上时减小，向下时增大。</p>
-        <p><span class="color-v">合速度 (V):</span> 是 <span class="color-vx">Vx</span> 和 <span class="color-vy">Vy</span> 的矢量和。</p>
-    </div>
-
-    <!-- 修改：运动学公式面板改为微分形式，并使用 MathML -->
-    <div id="formulaExplanation">
-        <h3>运动学公式 (微分形式, 忽略空气阻力)</h3>
-        <p>微分形式描述了物理量在极短时间段 (<span class="color-g">dt</span>) 内的变化。</p>
-        <p><b>水平方向 (<span class="color-vx">x轴</span>):</b></p>
-        <p>
-            <math display="block">
-                <mrow>
-                    <mi>d</mi><msub><mi>V</mi><mi>x</mi></msub>
-                    <mo>=</mo>
-                    <mn>0</mn>
-                </mrow>
-            </math>
-        </p>
-        <p>
-            <math display="block">
-                <mrow>
-                    <mi>d</mi><mi>X</mi>
-                    <mo>=</mo>
-                    <msub><mi>V</mi><mi>x</mi></msub>
-                    <mi>d</mi><mi>t</mi></mrow> <!-- 乘号已省略 -->
-            </math>
-        </p>
-        <p><b>垂直方向 (<span class="color-vy">y轴</span>):</b></p>
-        <p>
-            <math display="block">
-                <mrow>
-                    <mi>d</mi><msub><mi>V</mi><mi>y</mi></msub>
-                    <mo>=</mo>
-                    <mi>g</mi>
-                    <mi>d</mi><mi>t</mi> <!-- 乘号已省略 -->
-                </mrow>
-            </math>
-        </p>
-        <p>
-            <math display="block">
-                <mrow>
-                    <mi>d</mi><mi>Y</mi>
-                    <mo>=</mo>
-                    <msub><mi>V</mi><mi>y</mi></msub>
-                    <mi>d</mi><mi>t</mi> <!-- 乘号已省略 -->
-                </mrow>
-            </math>
-        </p>
-        <p><b>合速度 (<span class="color-v">V</span>):</b></p>
-        <p>合速度 <span class="color-v">V</span> 是 <span class="color-vx">V<sub>x</sub></span> 和 <span class="color-vy">V<sub>y</sub></span> 的矢量和：</p>
-        <p>
-            <math display="block">
-                <mrow>
-                    <mover accent="true">
-                        <mi>V</mi>
-                        <mo>→</mo>
-                    </mover>
-                    <mo>=</mo>
-                    <mover accent="true">
-                        <msub><mi>V</mi><mi>x</mi></msub>
-                        <mo>→</mo>
-                    </mover>
-                    <mo>+</mo>
-                    <mover accent="true">
-                        <msub><mi>V</mi><mi>y</mi></msub>
-                        <mo>→</mo>
-                    </mover>
-                </mrow>
-            </math>
-        </p>
-    </div>
-
-    <script src="main.js"></script>
 </body>
 </html>
