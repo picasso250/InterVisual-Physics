@@ -1,17 +1,20 @@
 // my_physics_simulations/shm/shm.js
 
+// 导入通用的绘图工具函数
+import { drawArrow } from './drawing_utils.js'; // 确保路径正确
+
 const canvas = document.getElementById('shmCanvas');
 const ctx = canvas.getContext('2d');
 const infoDiv = document.getElementById('info');
 
-// Get control panel elements
+// 获取控制面板元素
 const massSlider = document.getElementById('massSlider');
 const massValueSpan = document.getElementById('massValue');
 const springConstantSlider = document.getElementById('springConstantSlider');
 const springConstantValueSpan = document.getElementById('springConstantValue');
 const resetButton = document.getElementById('resetButton');
 
-// Get data display elements
+// 获取实时数据面板元素
 const timeSpan = document.getElementById('timeValue');
 const positionSpan = document.getElementById('positionValue');
 const velocitySpan = document.getElementById('velocityValue');
@@ -20,87 +23,59 @@ const kineticEnergySpan = document.getElementById('kineticEnergyValue');
 const potentialEnergySpan = document.getElementById('potentialEnergyValue');
 const totalEnergySpan = document.getElementById('totalEnergyValue');
 
-// --- Physics Variables ---
+// --- 物理变量 ---
 let mass = 5; // kg
 let springConstant = 2; // N/m
-let positionX; // current position of the mass (center)
+let positionX; // 质量块的当前位置 (中心)
 let velocityX = 0;
 let accelerationX = 0;
 let time = 0;
-const dt = 0.05; // Time step for simulation (seconds per frame)
+const dt = 0.05; // 模拟的时间步长 (每帧秒数)
 
-// --- Simulation Constants ---
-const floorY = canvas.height * 0.7; // Y-coordinate of the floor/ground
-const equilibriumXOffset = 200; // Offset from the left wall for equilibrium position
-let equilibriumX; // Absolute X-coordinate of equilibrium position
+// --- 模拟常量 ---
+const floorY = canvas.height * 0.7; // 地面/地板的Y坐标
+const equilibriumXOffset = 200; // 距离左墙壁的平衡位置偏移量
+let equilibriumX; // 平衡位置的绝对X坐标
 const wallWidth = 20;
 const wallHeight = 200;
 const massWidth = 60;
 const massHeight = 60;
-const springCoilCount = 10; // Number of coils for spring drawing
-const springCoilHeight = 15; // Height of each spring coil
+const springCoilCount = 10; // 弹簧线圈的数量
+const springCoilHeight = 15; // 每个弹簧线圈的高度
 
-// --- Animation state ---
-let isAnimating = false; // Is the simulation running?
-let isDragging = false; // Is the mass being dragged?
-let dragOffsetX; // Offset from mass center to mouse pointer during drag
-let animationFrameId; // To store requestAnimationFrame ID
+// --- 动画状态 ---
+let isAnimating = false; // 模拟是否正在运行
+let isDragging = false; // 质量块是否正在被拖拽
+let dragOffsetX; // 拖拽时鼠标指针到质量块中心的偏移量
+let animationFrameId; // 存储 requestAnimationFrame 的ID
 
-// --- Arrow drawing parameters ---
+// --- 箭头绘图参数 (现在这些是局部于shm.js，因为它们是shm.js特有的箭头样式) ---
 const arrowHeadSize = 8;
 const arrowHeadAngle = Math.PI / 6;
-const forceScale = 0.5; // Scale for force arrow length
-const velocityScale = 10; // Scale for velocity arrow length
-const accelerationScale = 10; // Scale for acceleration arrow length
-const maxArrowLength = 100; // Max length for dynamic arrows
+const forceScale = 0.5; // 力箭头长度的比例
+const velocityScale = 10; // 速度箭头长度的比例
+const accelerationScale = 10; // 加速度箭头长度的比例
+const maxArrowLength = 100; // 动态箭头的最大长度
 
-// --- Helper: Draw an arrow ---
-function drawArrow(x1, y1, x2, y2, color, lineWidth, label = null, labelOffsetX = 0, labelOffsetY = 0) {
-    ctx.beginPath();
-    ctx.moveTo(x1, y1);
-    ctx.lineTo(x2, y2);
-    ctx.strokeStyle = color;
-    ctx.lineWidth = lineWidth;
-    ctx.stroke();
-
-    const angle = Math.atan2(y2 - y1, x2 - x1);
-    ctx.beginPath();
-    ctx.moveTo(x2, y2);
-    ctx.lineTo(x2 - arrowHeadSize * Math.cos(angle - arrowHeadAngle), y2 - arrowHeadSize * Math.sin(angle - arrowHeadAngle));
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(x2, y2);
-    ctx.lineTo(x2 - arrowHeadSize * Math.cos(angle + arrowHeadAngle), y2 - arrowHeadSize * Math.sin(angle + arrowHeadAngle));
-    ctx.stroke();
-
-    if (label) {
-        ctx.font = `bold 14px Segoe UI`;
-        ctx.fillStyle = color;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(label, x2 + labelOffsetX, y2 + labelOffsetY);
-    }
-}
-
-// --- Helper: Draw the spring ---
+// --- 辅助函数：绘制弹簧 ---
 function drawSpring(startX, endX, y) {
     const springLength = endX - startX;
-    if (springLength <= 0) return; // Don't draw if length is zero or negative
+    if (springLength <= 0) return; // 如果长度为零或负，则不绘制
 
     ctx.beginPath();
     ctx.strokeStyle = '#666';
     ctx.lineWidth = 2;
 
-    // Wall attachment
+    // 连接到墙壁
     ctx.moveTo(startX, y);
 
-    // Coils
+    // 线圈
     const coilSegmentLength = springLength / springCoilCount;
     for (let i = 0; i <= springCoilCount; i++) {
         const x = startX + i * coilSegmentLength;
         const offset = (i % 2 === 0) ? springCoilHeight : -springCoilHeight;
         if (i === 0 || i === springCoilCount) {
-             // For start/end, make coils flat to connect to wall/mass
+             // 对于起点/终点，线圈变平以连接到墙壁/质量块
             ctx.lineTo(x, y);
         } else {
             ctx.lineTo(x, y + offset);
@@ -109,15 +84,15 @@ function drawSpring(startX, endX, y) {
     ctx.stroke();
 }
 
-// --- Canvas Resizing ---
+// --- 画布大小调整 ---
 function resizeCanvas() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
     equilibriumX = wallWidth + equilibriumXOffset;
-    resetSimulation(false); // Reset without reinitializing physics params
+    resetSimulation(false); // 重置，但不重新初始化物理参数
 }
 
-// --- Reset Simulation State ---
+// --- 重置模拟状态 ---
 function resetSimulation(resetParams = true) {
     if (animationFrameId) {
         cancelAnimationFrame(animationFrameId);
@@ -131,17 +106,17 @@ function resetSimulation(resetParams = true) {
         springConstant = parseFloat(springConstantSlider.value);
     }
 
-    // Default starting position for dragging
-    positionX = equilibriumX + massWidth / 2 + 100; // Start a bit to the right of equilibrium
+    // 拖拽的默认起始位置
+    positionX = equilibriumX + massWidth / 2 + 100; // 从平衡位置稍微向右一点开始
     velocityX = 0;
     accelerationX = 0;
 
-    draw(); // Draw initial state
-    updateDataDisplay(); // Update data display for initial state
+    draw(); // 绘制初始状态
+    updateDataDisplay(); // 更新初始状态的数据显示
     infoDiv.textContent = "拖拽振子设置初始位置，点击画布开始模拟。";
 }
 
-// --- Initialize Controls ---
+// --- 初始化控制器 ---
 function initializeControls() {
     massSlider.value = mass;
     springConstantSlider.value = springConstant;
@@ -151,7 +126,7 @@ function initializeControls() {
     massSlider.addEventListener('input', (e) => {
         mass = parseFloat(e.target.value);
         massValueSpan.textContent = mass.toFixed(1);
-        // If not animating, just update display. If animating, next reset will use new value.
+        // 如果没有在动画，只更新显示。如果在动画，下一次重置会使用新值。
         if (!isAnimating) updateDataDisplay();
     });
 
@@ -164,16 +139,16 @@ function initializeControls() {
     resetButton.addEventListener('click', () => resetSimulation(true));
 }
 
-// --- Update Data Display ---
+// --- 更新数据面板 ---
 function updateDataDisplay() {
-    // Calculate energies
+    // 计算能量
     const displacement = positionX - equilibriumX;
     const kineticEnergy = 0.5 * mass * velocityX * velocityX;
     const potentialEnergy = 0.5 * springConstant * displacement * displacement;
     const totalEnergy = kineticEnergy + potentialEnergy;
 
     timeSpan.textContent = time.toFixed(2);
-    positionSpan.textContent = displacement.toFixed(2); // Display displacement from equilibrium
+    positionSpan.textContent = displacement.toFixed(2); // 显示相对于平衡位置的位移
     velocitySpan.textContent = velocityX.toFixed(2);
     accelerationSpan.textContent = accelerationX.toFixed(2);
     kineticEnergySpan.textContent = kineticEnergy.toFixed(2);
@@ -181,11 +156,11 @@ function updateDataDisplay() {
     totalEnergySpan.textContent = totalEnergy.toFixed(2);
 }
 
-// --- Drawing Function ---
+// --- 绘图函数 ---
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Draw the ground
+    // 绘制地面
     ctx.beginPath();
     ctx.moveTo(0, floorY);
     ctx.lineTo(canvas.width, floorY);
@@ -193,80 +168,89 @@ function draw() {
     ctx.lineWidth = 2;
     ctx.stroke();
 
-    // Draw the wall
+    // 绘制墙壁
     ctx.fillStyle = '#444';
     ctx.fillRect(0, floorY - wallHeight, wallWidth, wallHeight);
 
-    // Draw equilibrium line
+    // 绘制平衡线
     ctx.beginPath();
-    ctx.setLineDash([5, 5]); // Dashed line
+    ctx.setLineDash([5, 5]); // 虚线
     ctx.moveTo(equilibriumX, floorY - wallHeight);
     ctx.lineTo(equilibriumX, floorY);
     ctx.strokeStyle = '#aaa';
     ctx.lineWidth = 1;
     ctx.stroke();
-    ctx.setLineDash([]); // Reset line dash
+    ctx.setLineDash([]); // 重置实线
     ctx.font = '12px Arial';
     ctx.fillStyle = '#888';
     ctx.textAlign = 'center';
     ctx.fillText('平衡位置', equilibriumX, floorY - wallHeight - 10);
 
-    // Draw the spring
+    // 绘制弹簧
     const springAttachX = wallWidth;
-    const springAttachY = floorY - massHeight / 2; // Attach to the center of the mass vertically
+    const springAttachY = floorY - massHeight / 2; // 垂直连接到质量块的中心
     drawSpring(springAttachX, positionX - massWidth / 2, springAttachY);
 
-    // Draw the mass
+    // 绘制质量块
     ctx.fillStyle = '#007bff';
     ctx.fillRect(positionX - massWidth / 2, floorY - massHeight, massWidth, massHeight);
     ctx.strokeStyle = '#0056b3';
     ctx.lineWidth = 2;
     ctx.strokeRect(positionX - massWidth / 2, floorY - massHeight, massWidth, massHeight);
 
-    // Draw force arrow (F = ma)
+    // 绘制力箭头 (F = ma)
     const force = mass * accelerationX;
     const forceArrowLength = Math.min(Math.abs(force) * forceScale, maxArrowLength);
     if (forceArrowLength > 0.1) {
         const forceDir = Math.sign(force);
         drawArrow(
-            positionX, springAttachY + 20, // Start below mass
-            positionX + forceDir * forceArrowLength, springAttachY + 20,
-            '#dc3545', 2, 'F',
-            forceDir * 10, // labelOffsetX
-            (forceDir === 1 ? -15 : 15) // labelOffsetY (adjust if arrow is left/right)
+            ctx, // <-- 新增 ctx 参数
+            positionX, springAttachY + 20, // 箭头起点：质量块下方
+            positionX + forceDir * forceArrowLength, springAttachY + 20, // 箭头终点
+            '#dc3545', 2,
+            arrowHeadSize, arrowHeadAngle, // <-- 新增头部参数
+            'F', // 标签
+            forceDir * 10, // 标签X偏移
+            (forceDir === 1 ? -15 : 15) // 标签Y偏移 (根据方向调整)
         );
     }
 
-    // Draw velocity arrow
+    // 绘制速度箭头
     const velocityArrowLength = Math.min(Math.abs(velocityX) * velocityScale, maxArrowLength);
     if (velocityArrowLength > 0.1) {
         const velocityDir = Math.sign(velocityX);
         drawArrow(
-            positionX, springAttachY - 20, // Start above mass
-            positionX + velocityDir * velocityArrowLength, springAttachY - 20,
-            '#28a745', 2, 'V',
-            velocityDir * 10, // labelOffsetX
-            (velocityDir === 1 ? -15 : 15) // labelOffsetY
+            ctx, // <-- 新增 ctx 参数
+            positionX, springAttachY - 20, // 箭头起点：质量块上方
+            positionX + velocityDir * velocityArrowLength, springAttachY - 20, // 箭头终点
+            '#28a745', 2,
+            arrowHeadSize, arrowHeadAngle, // <-- 新增头部参数
+            'V', // 标签
+            velocityDir * 10, // 标签X偏移
+            (velocityDir === 1 ? -15 : 15) // 标签Y偏移
         );
     }
 
-    // Draw acceleration arrow
+    // 绘制加速度箭头
     const accelerationArrowLength = Math.min(Math.abs(accelerationX) * accelerationScale, maxArrowLength);
     if (accelerationArrowLength > 0.1) {
         const accelerationDir = Math.sign(accelerationX);
         drawArrow(
-            positionX, springAttachY, // Start from mass center
-            positionX + accelerationDir * accelerationArrowLength, springAttachY,
-            '#ffc107', 2, 'A',
-            accelerationDir * 10, // labelOffsetX
-            (accelerationDir === 1 ? -15 : 15) // labelOffsetY
+            ctx, // <-- 新增 ctx 参数
+            positionX, springAttachY, // 箭头起点：质量块中心
+            positionX + accelerationDir * accelerationArrowLength, springAttachY, // 箭头终点
+            '#ffc107', 2,
+            arrowHeadSize, arrowHeadAngle, // <-- 新增头部参数
+            'A', // 标签
+            accelerationDir * 10, // 标签X偏移
+            (accelerationDir === 1 ? -15 : 15) // 标签Y偏移
         );
     }
 
     updateDataDisplay();
 }
 
-// --- Physics Update ---
+// --- 物理更新 ---
 function update() {
     time += dt;
 
@@ -274,11 +258,11 @@ function update() {
     // F = -kx, a = F/m = - (k/m) * x_displacement
     accelerationX = -(springConstant / mass) * displacement;
 
-    // Euler integration (simple, but can accumulate error over time)
+    // 欧拉积分 (简单，但可能随时间累积误差)
     velocityX += accelerationX * dt;
     positionX += velocityX * dt;
 
-    // Stop if it goes off screen (shouldn't happen with ideal SHM, but as a safeguard)
+    // 如果振子移出屏幕 (理想简谐运动不会发生，但作为保护措施)
     if (positionX < -massWidth || positionX > canvas.width + massWidth) {
         cancelAnimationFrame(animationFrameId);
         isAnimating = false;
@@ -286,14 +270,14 @@ function update() {
     }
 }
 
-// --- Animation Loop ---
+// --- 动画循环 ---
 function animate() {
     update();
     draw();
     animationFrameId = requestAnimationFrame(animate);
 }
 
-// --- Mouse Events for Dragging ---
+// --- 鼠标拖拽事件处理 ---
 function getMousePos(event) {
     const rect = canvas.getBoundingClientRect();
     return {
@@ -309,17 +293,17 @@ function handleMouseDown(event) {
     const massTop = floorY - massHeight;
     const massBottom = floorY;
 
-    // Check if mouse is within mass boundaries
+    // 检查鼠标是否在质量块的边界内
     if (mousePos.x > massLeft && mousePos.x < massRight &&
         mousePos.y > massTop && mousePos.y < massBottom) {
         
         isDragging = true;
-        cancelAnimationFrame(animationFrameId); // Stop animation if dragging
+        cancelAnimationFrame(animationFrameId); // 拖拽时停止动画
         isAnimating = false;
-        velocityX = 0; // Reset velocity when dragging starts
+        velocityX = 0; // 拖拽开始时重置速度
         accelerationX = 0;
-        time = 0; // Reset time if we're setting new initial conditions
-        dragOffsetX = mousePos.x - positionX; // Calculate offset from center of mass
+        time = 0; // 如果设置新的初始条件，则重置时间
+        dragOffsetX = mousePos.x - positionX; // 计算从质量块中心到鼠标指针的偏移量
 
         infoDiv.textContent = "拖拽振子设置初始位置。";
     }
@@ -328,10 +312,10 @@ function handleMouseDown(event) {
 function handleMouseMove(event) {
     if (isDragging) {
         const mousePos = getMousePos(event);
-        // Update mass position based on mouse X, maintaining offset
-        // Ensure mass doesn't go through the wall
+        // 根据鼠标X更新质量块位置，保持偏移量
+        // 确保质量块不会穿过墙壁
         positionX = Math.max(wallWidth + massWidth / 2, mousePos.x - dragOffsetX);
-        draw(); // Redraw to show immediate drag effect
+        draw(); // 立即重绘以显示拖拽效果
     }
 }
 
@@ -339,8 +323,8 @@ function handleMouseUp() {
     if (isDragging) {
         isDragging = false;
         infoDiv.textContent = "点击画布开始模拟。";
-        draw(); // Final draw after drag
-        updateDataDisplay(); // Update data based on final drag position
+        draw(); // 拖拽后的最终绘制
+        updateDataDisplay(); // 根据最终拖拽位置更新数据
     }
 }
 
@@ -348,25 +332,24 @@ function handleCanvasClick() {
     if (!isAnimating && !isDragging) {
         isAnimating = true;
         infoDiv.textContent = "模拟进行中...";
-        animate(); // Start animation
+        animate(); // 开始动画
     } else if (isAnimating) {
-        // If already animating, click can pause it
+        // 如果正在动画，点击可以暂停
         cancelAnimationFrame(animationFrameId);
         isAnimating = false;
         infoDiv.textContent = "模拟暂停。点击画布继续。";
     }
 }
 
-
-// --- Event Listeners ---
+// --- 事件监听器 ---
 window.addEventListener('resize', resizeCanvas);
 canvas.addEventListener('mousedown', handleMouseDown);
 canvas.addEventListener('mousemove', handleMouseMove);
 canvas.addEventListener('mouseup', handleMouseUp);
-canvas.addEventListener('mouseleave', handleMouseUp); // End drag if mouse leaves canvas
-canvas.addEventListener('click', handleCanvasClick); // Click to start/pause
+canvas.addEventListener('mouseleave', handleMouseUp); // 鼠标离开画布时结束拖拽
+canvas.addEventListener('click', handleCanvasClick); // 点击开始/暂停
 
-// Initial setup
+// 初始设置
 initializeControls();
-resizeCanvas(); // Set initial canvas size and draw everything for the first time
-resetSimulation(true); // Ensure initial state is correctly set and drawn on load
+resizeCanvas(); // 设置初始画布大小并首次绘制所有内容
+resetSimulation(true); // 确保在加载时正确设置和绘制初始状态

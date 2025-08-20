@@ -1,3 +1,5 @@
+import { drawArrow } from './drawing_utils.js'; // Adjust path if needed
+
 const canvas = document.getElementById('gravityCanvas');
 const ctx = canvas.getContext('2d');
 const infoDiv = document.getElementById('info'); // 获取信息提示 div
@@ -54,48 +56,6 @@ let time = 0; // 新增：动画时间，单位为帧数 (可理解为秒，因�
 // 新增：用于时间回溯模式下，记录轨迹的X轴范围
 let minHistoryX = Infinity;
 let maxHistoryX = -Infinity;
-
-// --- 辅助函数：绘制带箭头的线 ---
-// 优化：新增 labelOffsetX 和 labelOffsetY 参数，用于更精确地控制标签位置
-function drawArrow(ctxToDraw, x1, y1, x2, y2, color, lineWidth, headSize, headAngle, label = null, labelOffsetX = 0, labelOffsetY = 0) {
-    ctxToDraw.beginPath();
-    ctxToDraw.moveTo(x1, y1);
-    ctxToDraw.lineTo(x2, y2);
-    ctxToDraw.strokeStyle = color;
-    ctxToDraw.lineWidth = lineWidth;
-    ctxToDraw.stroke();
-
-    // 绘制箭头头部
-    const angle = Math.atan2(y2 - y1, x2 - x1);
-    ctxToDraw.beginPath();
-    ctxToDraw.moveTo(x2, y2);
-    ctxToDraw.lineTo(
-        x2 - headSize * Math.cos(angle - headAngle),
-        y2 - headSize * Math.sin(angle - headAngle)
-    );
-    ctxToDraw.stroke();
-    ctxToDraw.beginPath();
-    ctxToDraw.moveTo(x2, y2);
-    ctxToDraw.lineTo(
-        x2 - headSize * Math.cos(angle + headAngle),
-        y2 - headSize * Math.sin(angle + headAngle)
-    );
-    ctxToDraw.stroke();
-
-    // 绘制标签
-    if (label) {
-        ctxToDraw.font = `bold 14px Segoe UI`; // 字体大小固定，不随zoom变化
-        ctxToDraw.fillStyle = color;
-        ctxToDraw.textAlign = 'center'; // 文本居中
-        ctxToDraw.textBaseline = 'middle'; // 新增：文本垂直居中，便于精确偏移
-
-        // 根据传入的偏移量直接计算标签位置
-        let textX = x2 + labelOffsetX;
-        let textY = y2 + labelOffsetY;
-
-        ctxToDraw.fillText(label, textX, textY);
-    }
-}
 
 // --- 初始化滑块值 ---
 function initializeControls() {
