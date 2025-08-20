@@ -195,9 +195,9 @@ function draw() {
     drawSpring(springAttachX, positionX - massWidth / 2, springAttachY);
 
     // 绘制质量块
-    ctx.fillStyle = '#007bff';
+    ctx.fillStyle = '#CCCCCC'; // 浅灰色内核
     ctx.fillRect(positionX - massWidth / 2, floorY - massHeight, massWidth, massHeight);
-    ctx.strokeStyle = '#0056b3';
+    ctx.strokeStyle = '#000000'; // 黑色边框
     ctx.lineWidth = 2;
     ctx.strokeRect(positionX - massWidth / 2, floorY - massHeight, massWidth, massHeight);
 
