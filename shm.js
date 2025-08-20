@@ -112,7 +112,11 @@ function resetSimulation(resetParams = true) {
     // 拖拽的默认起始位置
     positionX = equilibriumX + massWidth / 2 + 100; // 从平衡位置稍微向右一点开始
     velocityX = 0;
-    accelerationX = 0;
+    // <--- 关键修改开始 --->
+    // 在这里根据新的 positionX 计算初始加速度
+    const initialDisplacement = positionX - equilibriumX;
+    accelerationX = -(springConstant / mass) * initialDisplacement;
+    // <--- 关键修改结束 --->
 
     draw(); // 绘制初始状态
     updateDataDisplay(); // 更新初始状态的数据显示
@@ -130,13 +134,25 @@ function initializeControls() {
         mass = parseFloat(e.target.value);
         massValueSpan.textContent = mass.toFixed(1);
         // 如果没有在动画，只更新显示。如果在动画，下一次重置会使用新值。
-        if (!isAnimating) updateDataDisplay();
+        // 但为了让改变立即生效在静止状态，需要重新计算加速度并绘制
+        if (!isAnimating) {
+            const currentDisplacement = positionX - equilibriumX;
+            accelerationX = -(springConstant / mass) * currentDisplacement; // 重新计算加速度
+            draw(); // 重新绘制
+        }
+        updateDataDisplay();
     });
 
     springConstantSlider.addEventListener('input', (e) => {
         springConstant = parseFloat(e.target.value);
         springConstantValueSpan.textContent = springConstant.toFixed(1);
-        if (!isAnimating) updateDataDisplay();
+        // 如果没有在动画，只更新显示。为了让改变立即生效在静止状态，需要重新计算加速度并绘制
+        if (!isAnimating) {
+            const currentDisplacement = positionX - equilibriumX;
+            accelerationX = -(springConstant / mass) * currentDisplacement; // 重新计算加速度
+            draw(); // 重新绘制
+        }
+        updateDataDisplay();
     });
 
     resetButton.addEventListener('click', () => resetSimulation(true));
@@ -299,7 +315,7 @@ function handleMouseDown(event) {
         cancelAnimationFrame(animationFrameId); // 拖拽时停止动画
         isAnimating = false;
         velocityX = 0; // 拖拽开始时重置速度
-        accelerationX = 0;
+        accelerationX = 0; // 拖拽时暂时设为0，或者在mouseUp时重新计算
         time = 0; // 如果设置新的初始条件，则重置时间
         dragOffsetX = mousePos.x - positionX; // 计算从质量块中心到鼠标指针的偏移量
 
@@ -313,6 +329,10 @@ function handleMouseMove(event) {
         // 根据鼠标X更新质量块位置，保持偏移量
         // 确保质量块不会穿过墙壁
         positionX = Math.max(wallWidth + massWidth / 2, mousePos.x - dragOffsetX);
+        // <--- 额外改进：拖拽时实时更新加速度，让箭头和数值及时反映 --->
+        const currentDisplacement = positionX - equilibriumX;
+        accelerationX = -(springConstant / mass) * currentDisplacement;
+        // <--- 额外改进结束 --->
         draw(); // 立即重绘以显示拖拽效果
     }
 }
@@ -321,6 +341,10 @@ function handleMouseUp() {
     if (isDragging) {
         isDragging = false;
         infoDiv.textContent = "点击画布开始模拟。";
+        // <--- 确保拖拽结束后加速度值正确 --->
+        const currentDisplacement = positionX - equilibriumX;
+        accelerationX = -(springConstant / mass) * currentDisplacement;
+        // <--- 结束 --->
         draw(); // 拖拽后的最终绘制
         updateDataDisplay(); // 根据最终拖拽位置更新数据
     }
