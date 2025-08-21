@@ -87,6 +87,28 @@ canvas {
   box-shadow: 0 0 0 4px var(--ring);
 }
 
+/* --- Icon Styles (using CSS Mask for color control) --- */
+.back-icon {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+
+    /* 核心: 使用 currentColor 关键字，图标颜色会自动继承父元素(<a>)的文本颜色 */
+    background-color: currentColor;
+
+    /* 将SVG作为蒙版 */
+    -webkit-mask-image: url('icons/back-arrow.svg');
+    mask-image: url('icons/back-arrow.svg');
+
+    /* 确保蒙版完全覆盖元素 */
+    -webkit-mask-size: cover;
+    mask-size: cover;
+
+    /* 垂直对齐，使其与旁边的文本看起来协调 */
+    vertical-align: middle;
+    margin-right: 4px; /* 图标和文字之间的间距 */
+}
+
 /* Top Info Banner */
 #info {
   position: absolute;
