@@ -37,10 +37,15 @@
             margin: 0;
         }
         .simulation-list li {
-            margin-bottom: 15px;
+            margin-bottom: 25px; /* 增加底部外边距，为 Canvas 留出空间 */
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* 使链接和 Canvas 在水平方向居中 */
         }
         .simulation-list li a {
             display: block;
+            width: calc(100% - 50px); /* 宽度调整，与 padding 结合 */
+            max-width: 400px; /* 限制最大宽度 */
             padding: 15px 25px;
             background-color: #007bff;
             color: white;
@@ -49,6 +54,7 @@
             font-size: 1.1em;
             transition: background-color 0.3s ease, transform 0.2s ease;
             box-shadow: 0 2px 8px rgba(0, 123, 255, 0.2);
+            margin-bottom: 15px; /* 链接和 Canvas 之间的间距 */
         }
         .simulation-list li a:hover {
             background-color: #0056b3;
@@ -59,6 +65,20 @@
             transform: translateY(0);
             box-shadow: 0 1px 4px rgba(0, 123, 255, 0.2);
         }
+        /* 迷你 Canvas 的样式 */
+        .mini-simulation-container {
+            width: 100%; /* 容器占据父元素全部宽度 */
+            display: flex;
+            justify-content: center; /* Canvas 在容器中居中 */
+        }
+        .mini-simulation-container canvas {
+            width: 100%; /* Canvas 在容器内响应式 */
+            max-width: 400px; /* 限制 Canvas 的最大宽度 */
+            height: 120px; /* 固定高度以保持一致性 */
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #f8f8f8; /* 略微偏白的背景色 */
+        }
     </style>
 </head>
 <body>
@@ -66,10 +86,22 @@
         <h1>我的物理模拟</h1>
         <p>探索各种物理现象的互动可视化。</p>
         <ul class="simulation-list">
-            <li><a href="projectile_motion.html">抛体运动模拟</a></li>
-            <li><a href="shm.html">简谐运动模拟 (待创建)</a></li>
+            <li>
+                <a href="projectile_motion.html">抛体运动模拟</a>
+                <div class="mini-simulation-container">
+                    <canvas id="projectileMiniCanvas"></canvas>
+                </div>
+            </li>
+            <li>
+                <a href="shm.html">简谐运动模拟 </a>
+                <div class="mini-simulation-container">
+                    <canvas id="shmMiniCanvas"></canvas>
+                </div>
+            </li>
             <!-- 未来添加更多模拟的链接 -->
         </ul>
     </div>
+    <!-- 引入新的 JavaScript 文件 -->
+    <script src="simulations.js"></script>
 </body>
 </html>
