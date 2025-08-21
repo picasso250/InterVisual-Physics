@@ -1,17 +1,15 @@
 // my_physics_simulations/shm/shm.js
 import { drawArrow } from './drawing_utils.js';
 import DataDisplay from './data_display.js';
+import ControlsManager from './controls_manager.js'; // IMPORT NEW MODULE
 
 const canvas = document.getElementById('shmCanvas');
 const ctx = canvas.getContext('2d');
 const infoDiv = document.getElementById('info');
-
-const massSlider = document.getElementById('massSlider');
-const massValueSpan = document.getElementById('massValue');
-const springConstantSlider = document.getElementById('springConstantSlider');
-const springConstantValueSpan = document.getElementById('springConstantValue');
-const resetButton = document.getElementById('resetButton');
+const controlsContainer = document.getElementById('controls'); // Get controls container
 const dataDisplayContainer = document.getElementById('dataDisplay');
+
+// REMOVE old slider/span element getters
 
 // NEW: Read colors from CSS custom properties for canvas drawing
 const style = getComputedStyle(document.documentElement);
@@ -31,7 +29,6 @@ const colors = {
 };
 
 
-// UPDATE: Use new CSS class names in the DataDisplay configuration
 const dataDisplayConfig = [
     { key: 'time', label: '时间 (t)', className: 'color-time', initialValue: '0.00 s' },
     { key: 'displacement', label: '位置 (X)', className: 'color-x', initialValue: '0.00 m' },
@@ -50,6 +47,32 @@ let velocityX = 0;
 let accelerationX = 0;
 let time = 0;
 const dt = 0.05; // 模拟的时间步长 (每帧秒数)
+
+// --- Controls Setup ---
+const controlsConfig = [
+    { type: 'title', text: '简谐运动控制' },
+    { type: 'slider', key: 'mass', label: '质量 (m):', min: 0.5, max: 10, step: 0.1, initialValue: mass, unit: ' kg', precision: 1 },
+    { type: 'slider', key: 'springConstant', label: '弹簧常数 (k):', min: 0.1, max: 10, step: 0.1, initialValue: springConstant, unit: ' N/m', precision: 1 },
+    { type: 'button', text: '重置', onClick: () => resetSimulation(true) }
+];
+
+function onControlsUpdate(key, value) {
+    if (key === 'mass') {
+        mass = value;
+    } else if (key === 'springConstant') {
+        springConstant = value;
+    }
+
+    // Update simulation state if not currently running
+    if (!isAnimating) {
+        const currentDisplacement = positionX - equilibriumX;
+        accelerationX = -(springConstant / mass) * currentDisplacement;
+        draw();
+    }
+    updateDataDisplay(); // Always update display
+}
+
+const controlsManager = new ControlsManager(controlsContainer, controlsConfig, onControlsUpdate);
 
 // --- 模拟常量 ---
 const floorY = canvas.height * 0.7;
@@ -182,19 +205,13 @@ function drawGraphs() {
         drawCurve(forceHistory, forceGraphScale, colors.force);
     }
     
-    // 在时间序列图的“当前时间”线上绘制当前物理量点
     if (timeHistory.length > 0) {
-        const currentPointX = timeGraphEndX; // "当前时间"虚线的X坐标
-
-        // 从历史数据数组的末尾获取当前值
+        const currentPointX = timeGraphEndX;
         const latestDisplacement = displacementHistory[displacementHistory.length - 1];
         const latestVelocity = velocityHistory[velocityHistory.length - 1];
         const latestAcceleration = accelerationHistory[accelerationHistory.length - 1];
         const latestForce = forceHistory[forceHistory.length - 1];
-
-        const pointRadius = 4; // 点的半径
-
-        // 辅助函数：绘制单个数据点
+        const pointRadius = 4;
         const drawPoint = (value, scale, color) => {
             const y = timeGraphCenterY - value * scale;
             ctx.fillStyle = color;
@@ -202,8 +219,6 @@ function drawGraphs() {
             ctx.arc(currentPointX, y, pointRadius, 0, Math.PI * 2);
             ctx.fill();
         };
-
-        // **** FIX: Use themed colors from the 'colors' object ****
         drawPoint(latestDisplacement, displacementGraphScale, colors.displacement);
         drawPoint(latestVelocity, velocityGraphScale, colors.velocity);
         drawPoint(latestAcceleration, accelerationGraphScale, colors.acceleration);
@@ -211,7 +226,6 @@ function drawGraphs() {
     }
 }
 
-// ... (resizeCanvas, resetSimulation are okay)
 
 function resizeCanvas() {
     canvas.width = window.innerWidth;
@@ -233,8 +247,9 @@ function resetSimulation(resetParams = true) {
     timeHistory = [];
 
     if (resetParams) {
-        mass = parseFloat(massSlider.value);
-        springConstant = parseFloat(springConstantSlider.value);
+        // These variables are now the source of truth, updated by ControlsManager
+        mass = controlsManager.getValue('mass');
+        springConstant = controlsManager.getValue('springConstant');
     }
 
     const L0 = equilibriumX - wallWidth;
@@ -251,39 +266,8 @@ function resetSimulation(resetParams = true) {
 }
 
 
-// --- 初始化控制器 (Updated to include units in span) ---
-function initializeControls() {
-    massSlider.value = mass;
-    springConstantSlider.value = springConstant;
-    massValueSpan.textContent = mass.toFixed(1) + ' kg';
-    springConstantValueSpan.textContent = springConstant.toFixed(1) + ' N/m';
+// REMOVE initializeControls() function
 
-    massSlider.addEventListener('input', (e) => {
-        mass = parseFloat(e.target.value);
-        massValueSpan.textContent = mass.toFixed(1) + ' kg';
-        if (!isAnimating) {
-            const currentDisplacement = positionX - equilibriumX;
-            accelerationX = -(springConstant / mass) * currentDisplacement;
-            draw();
-        }
-        updateDataDisplay();
-    });
-
-    springConstantSlider.addEventListener('input', (e) => {
-        springConstant = parseFloat(e.target.value);
-        springConstantValueSpan.textContent = springConstant.toFixed(1) + ' N/m';
-        if (!isAnimating) {
-            const currentDisplacement = positionX - equilibriumX;
-            accelerationX = -(springConstant / mass) * currentDisplacement;
-            draw();
-        }
-        updateDataDisplay();
-    });
-
-    resetButton.addEventListener('click', () => resetSimulation(true));
-}
-
-// --- 更新数据面板 (No change needed) ---
 function updateDataDisplay() {
     const displacement = positionX - equilibriumX;
     const currentForce = -springConstant * displacement;
@@ -296,30 +280,29 @@ function updateDataDisplay() {
     });
 }
 
-// --- 绘图函数 (Updated to use themed colors) ---
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     ctx.beginPath();
     ctx.moveTo(0, floorY);
     ctx.lineTo(canvas.width, floorY);
-    ctx.strokeStyle = colors.ground; // THEMED
+    ctx.strokeStyle = colors.ground;
     ctx.lineWidth = 2;
     ctx.stroke();
 
-    ctx.fillStyle = colors.wall; // THEMED
+    ctx.fillStyle = colors.wall;
     ctx.fillRect(0, floorY - wallHeight, wallWidth, wallHeight);
 
     ctx.beginPath();
     ctx.setLineDash([5, 5]);
     ctx.moveTo(equilibriumX, floorY - wallHeight);
     ctx.lineTo(equilibriumX, floorY);
-    ctx.strokeStyle = colors.equilibrium; // THEMED
+    ctx.strokeStyle = colors.equilibrium;
     ctx.lineWidth = 1;
     ctx.stroke();
     ctx.setLineDash([]);
     ctx.font = '12px Segoe UI';
-    ctx.fillStyle = colors.muted; // THEMED
+    ctx.fillStyle = colors.muted;
     ctx.textAlign = 'center';
     ctx.fillText('平衡位置', equilibriumX, floorY - wallHeight - 10);
 
@@ -327,9 +310,9 @@ function draw() {
     const springAttachY = floorY - massHeight / 2;
     drawSpring(springAttachX, positionX - massWidth / 2, springAttachY);
 
-    ctx.fillStyle = colors.massFill; // THEMED
+    ctx.fillStyle = colors.massFill;
     ctx.fillRect(positionX - massWidth / 2, floorY - massHeight, massWidth, massHeight);
-    ctx.strokeStyle = colors.massStroke; // THEMED
+    ctx.strokeStyle = colors.massStroke;
     ctx.lineWidth = 2;
     ctx.strokeRect(positionX - massWidth / 2, floorY - massHeight, massWidth, massHeight);
 
@@ -423,8 +406,6 @@ function handleMouseDown(event) {
 }
 
 function handleMouseMove(event) {
-    // 重要！！！
-    // 这个函数的代码是对的，所以千万不要更改这里的代码。
     if (isDragging) {
         const mousePos = getMousePos(event);
         let desiredPositionX = mousePos.x - dragOffsetX;
@@ -493,6 +474,8 @@ canvas.addEventListener('mouseup', handleMouseUp);
 canvas.addEventListener('mouseleave', handleMouseUp);
 canvas.addEventListener('click', handleCanvasClick);
 
-initializeControls();
+// REMOVE initializeControls() call
+
+// Initial setup calls
 resizeCanvas();
 resetSimulation(true);
