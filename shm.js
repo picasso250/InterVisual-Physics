@@ -21,7 +21,7 @@ const colors = {
     force: getColor('--color-f'),
     time: getColor('--color-time'),
     ground: getColor('--muted'),
-    wall: getColor('--text'),
+    wall: getColor('--color-wall'),
     spring: getColor('--muted'),
     massFill: getColor('--panel'),
     massStroke: getColor('--text'),
@@ -75,7 +75,7 @@ function onControlsUpdate(key, value) {
 const controlsManager = new ControlsManager(controlsContainer, controlsConfig, onControlsUpdate);
 
 // --- 模拟常量 ---
-const floorY = canvas.height * 0.7;
+const floorY = canvas.height * 0.9;
 let equilibriumX;
 const wallWidth = 20;
 const wallHeight = 200;
