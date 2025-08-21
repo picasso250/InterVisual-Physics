@@ -30,7 +30,7 @@ canvas {
 #controls {
     position: absolute;
     top: 20px;
-    right: 20px;
+    right: 20px; /* Aligned with dataDisplayContainer */
     background-color: rgba(255, 255, 255, 0.85); /* 半透明白色背景 */
     padding: 15px;
     border-radius: 8px;
@@ -130,6 +130,28 @@ canvas {
 .color-vy { color: #28a745; font-weight: bold; } /* 绿色 */
 .color-g { color: #6c757d; font-weight: bold; } /* 灰色 */
 .color-v { color: #555555; font-weight: bold; } /* 合速度的颜色 */
+
+/* 新增：实时数据展示面板容器样式 (现在由主CSS文件管理) */
+#dataDisplayContainer {
+    position: absolute;
+    top: 20px; /* 定位在右上角 */
+    right: 20px; /* 定位在右上角 */
+    background-color: rgba(255, 255, 255, 0.85);
+    padding: 15px;
+    border-radius: 8px;
+    color: #333;
+    font-size: 0.9em;
+    max-width: 250px;
+    user-select: none;
+    z-index: 10;
+    transition: opacity 0.3s ease-in-out; /* Add transition for fade effect */
+}
+
+#dataDisplayContainer.hidden {
+    opacity: 0;
+    pointer-events: none; /* Prevent interaction when hidden */
+}
+
 
 /* 新增：运动学公式面板 */
 #formulaExplanation {

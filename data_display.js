@@ -1,36 +1,43 @@
 // File: `data_display.js`
 /**
  * DataDisplay Class
- * Manages the creation, updating, and visibility of the real-time data display panel.
+ * Manages the creation and updating of the real-time data display table.
  * The table structure is dynamically generated based on provided field definitions.
+ * It's purely concerned with the table content, not its positioning or visibility (which is handled externally).
  */
 class DataDisplay {
-    constructor(containerId, displayFieldsConfig) {
-        this.container = document.getElementById(containerId);
+    /**
+     * @param {HTMLElement} containerElement - The DOM element where the data table will be appended.
+     * @param {Array<Object>} displayFieldsConfig - An array of objects defining the data fields.
+     *   Each object should have:
+     *     - key: (string) The key to look up in the data object for updating.
+     *     - label: (string) The text label to display in the table.
+     *     - className: (string, optional) A CSS class to apply to the value span.
+     *     - initialValue: (string, optional) The initial text content for the value span.
+     */
+    constructor(containerElement, displayFieldsConfig) {
+        this.container = containerElement;
         if (!this.container) {
-            console.error(`DataDisplay: Container element with ID '${containerId}' not found.`);
+            console.error("DataDisplay: Container element not provided or not found.");
             return;
         }
 
         this.elements = {}; // To store references to internal span elements for updating
         this.displayFieldsConfig = displayFieldsConfig; // Store the configuration for fields
-        this.panel = null; // Reference to the main data display panel div
 
-        this._createPanel(); // Create and append the panel structure
-        this.hide(); // Initially hide the panel
+        this._createTable(); // Create and append the table structure to the container
     }
 
     /**
-     * Dynamically creates the HTML structure for the data display panel
+     * Dynamically creates the HTML <table> structure for the data display
      * and appends it to the specified container.
      */
-    _createPanel() {
-        this.panel = document.createElement('div');
-        this.panel.id = 'dataDisplayPanel';
-        // Note: The main styles for #dataDisplayPanel are in data_display.css
+    _createTable() {
+        // Clear existing content in the container, just in case
+        this.container.innerHTML = '';
 
         const table = document.createElement('table');
-        // Note: Table specific styles are in data_display.css
+        table.classList.add('data-display-table'); // Apply a class for internal table styling
 
         this.displayFieldsConfig.forEach(field => {
             const tr = document.createElement('tr');
@@ -41,7 +48,7 @@ class DataDisplay {
             const tdValue = document.createElement('td');
             const spanValue = document.createElement('span');
 
-            // Apply color class if defined
+            // Apply color class if defined (these classes are assumed to be global or in main CSS)
             if (field.className) {
                 spanValue.classList.add(field.className);
             }
@@ -56,8 +63,7 @@ class DataDisplay {
             table.appendChild(tr);
         });
 
-        this.panel.appendChild(table);
-        this.container.appendChild(this.panel);
+        this.container.appendChild(table);
     }
 
     /**
@@ -67,7 +73,9 @@ class DataDisplay {
      *   Example: { time: 10.5, vx: 2.3, ... }
      */
     update(data) {
-        if (!this.panel || !this.isVisible) { // Only update if panel exists and is visible
+        // Only update if elements are initialized. Visibility is managed by the main script.
+        if (Object.keys(this.elements).length === 0) {
+            console.warn("DataDisplay: Elements not initialized, cannot update.");
             return;
         }
 
@@ -104,25 +112,8 @@ class DataDisplay {
         });
     }
 
-    /**
-     * Shows the data display panel.
-     */
-    show() {
-        if (this.panel) {
-            this.panel.classList.remove('hidden');
-            this.isVisible = true;
-        }
-    }
-
-    /**
-     * Hides the data display panel.
-     */
-    hide() {
-        if (this.panel) {
-            this.panel.classList.add('hidden');
-            this.isVisible = false;
-        }
-    }
+    // show() and hide() methods are REMOVED as per the user's request.
+    // The main script will manage the visibility of the dataDisplayContainer element itself.
 }
 
 export default DataDisplay; // Export the class

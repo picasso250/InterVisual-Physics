@@ -7,6 +7,7 @@ const ctx = canvas.getContext('2d');
 const infoDiv = document.getElementById('info'); // 获取信息提示 div
 const controlsDiv = document.getElementById('controls'); // 获取控制面板 div
 const explanationDiv = document.getElementById('explanation'); // 获取解释面板 div
+const dataDisplayContainer = document.getElementById('dataDisplayContainer'); // 获取数据面板容器 div
 
 // 获取控制面板元素
 const gravitySlider = document.getElementById('gravitySlider');
@@ -25,8 +26,8 @@ const displayFieldsConfig = [
     { key: 'gravity', label: '重力 (G):', className: 'color-g', initialValue: '0.00' }
 ];
 
-// 实例化数据展示面板组件，传入配置
-const dataDisplay = new DataDisplay('dataDisplayContainer', displayFieldsConfig);
+// 实例化数据展示面板组件，传入容器元素和配置
+const dataDisplay = new DataDisplay(dataDisplayContainer, displayFieldsConfig);
 
 // 小球属性
 let ball = {
@@ -118,7 +119,7 @@ function resetBall() {
 
     infoDiv.textContent = "点击这里开始 / 重新开始"; // 更新信息文本
     controlsDiv.classList.remove('hidden'); // 显示控制面板
-    dataDisplay.show(); // 显示数据面板 (确保在重置时可见)
+    dataDisplayContainer.classList.remove('hidden'); // 显示数据面板容器 (由主JS管理)
     
     animate(); // 启动主物理动画
 }
@@ -342,7 +343,7 @@ function update() {
 
         infoDiv.textContent = "时间回溯模式：左右移动鼠标查看速度分解。点击任意位置重新开始。";
         controlsDiv.classList.add('hidden'); // 隐藏控制面板
-        dataDisplay.show(); // 确保数据面板在时间回溯模式下仍然可见
+        dataDisplayContainer.classList.remove('hidden'); // 确保数据面板在时间回溯模式下仍然可见
         
         // Initially draw the stopped ball on the ground, then mousemove will take over
         draw();
@@ -373,7 +374,7 @@ function update() {
 
         infoDiv.textContent = "小球飞出屏幕。点击这里重新开始。";
         controlsDiv.classList.remove('hidden'); // 显示控制面板
-        dataDisplay.show(); // 确保数据面板在小球飞出后仍然可见
+        dataDisplayContainer.classList.remove('hidden'); // 确保数据面板在小球飞出后仍然可见
         draw(); // Draw final state before exiting.
         console.log("Animation stopped (ball flew off screen).");
     }
@@ -455,4 +456,4 @@ initialSpeedSlider.addEventListener('input', (event) => {
 initializeControls(); // 初始化所有控件
 resizeCanvas(); // 初始设置画布大小和球的位置 (并绘制初始静止状态)
 // 页面加载时，虽然尚未开始动画，但我们希望数据面板能显示初始值
-updateDataDisplay();
+updateDataDisplay(); // 更新初始值
