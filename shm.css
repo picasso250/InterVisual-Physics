@@ -22,7 +22,7 @@
 
 /* Specific Panel Positioning */
 #controls { top: var(--space-4); right: var(--space-4); }
-#dataDisplay { bottom: var(--space-4); left: var(--space-4); width: 240px; }
+#dataDisplay { bottom: var(--space-4); left: var(--space-4); }
 #formulaExplanation { bottom: var(--space-4); right: var(--space-4); max-width: 380px; font-size: 13px; }
 
 /* Panel Text & Colors */

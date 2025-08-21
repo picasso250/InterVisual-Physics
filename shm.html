@@ -10,6 +10,13 @@
     <link rel="stylesheet" href="shm.css">
     <link rel="stylesheet" href="data_display.css">
     <link rel="stylesheet" href="controls.css">
+
+    <!-- ADD KATEX CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" integrity="sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI+WdtXRGWt2kTvGFasHpSy3SV" crossorigin="anonymous">
+
+    <!-- ADD KATEX JS (defer aattributes improves loading performance) -->
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" integrity="sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG+vnGctmUb0ZY0l8" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" integrity="sha384-+VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4+/RRE05" crossorigin="anonymous"></script>
 </head>
 <body>
     <!-- ADDED BACK LINK -->
@@ -36,24 +43,41 @@
         <h3>简谐运动 (SHM) 微分形式</h3>
 
         <p><b>1. 恢复力 (胡克定律):</b></p>
-        <p>恢复力 <span class="color-f">F</span> 与位移 <mi>x</mi> 成正比，方向相反：</p>
-        <math display="block"><mrow><mi>F</mi><mo>=</mo><mo>-</mo><mi>k</mi><mi>x</mi></mrow></math>
-        <p><mi>k</mi> 为弹簧常数，<mi>x</mi> 为振子位移。</p>
+        <p>恢复力 <span class="color-f">F</span> 与位移 \(x\) 成正比，方向相反：</p>
+        <!-- MathML replaced with LaTeX -->
+        $$F = -kx$$
+        <p>\(k\) 为弹簧常数，\(x\) 为振子位移。</p>
 
         <p><b>2. 牛顿第二定律:</b></p>
-        <p>合力 <span class="color-f">F</span> = <mi>m</mi><mi>a</mi>。</p>
-        <p>加速度 <mi>a</mi> 是 <mi>x</mi> 对 <mi>t</mi> 的二阶导数：
-        <math display="inline"><mrow><mi>a</mi><mo>=</mo><mfrac><mrow><msup><mi>d</mi><mn>2</mn></msup><mi>x</mi></mrow><mrow><mi>d</mi><msup><mi>t</mi><mn>2</mn></msup></mrow></mfrac></mrow></math>。</p>
+        <p>合力 <span class="color-f">F</span> = \(ma\)。</p>
+        <p>加速度 \(a\) 是 \(x\) 对 \(t\) 的二阶导数：
+        <!-- MathML replaced with LaTeX -->
+        \(a = \frac{d^2x}{dt^2}\)。</p>
 
         <p><b>3. 运动微分方程:</b></p>
-        <math display="block"><mrow><mi>m</mi><mfrac><mrow><msup><mi>d</mi><mn>2</mn></msup><mi>x</mi></mrow><mrow><mi>d</mi><msup><mi>t</mi><mn>2</mn></msup></mrow></mfrac><mo>=</mo><mo>-</mo><mi>k</mi><mi>x</mi></mrow></math>
-        <p>整理成标准形式：</p>
-        <math display="block"><mrow><mfrac><mrow><msup><mi>d</mi><mn>2</mn></msup><mi>x</mi></mrow><mrow><mi>d</mi><msup><mi>t</mi><mn>2</mn></msup></mrow></mfrac><mo>+</mo><mfrac><mi>k</mi><mi>m</mi></mfrac><mi>x</mi><mo>=</mo><mn>0</mn></mrow></math>
-        <p>定义简谐运动。引入角频率 <mi>&omega;</mi>，其中 <math display="inline"><mrow><msup><mi>&omega;</mi><mn>2</mn></msup><mo>=</mo><mi>k</mi><mo>/</mo><mi>m</mi></mrow></math> (或 <math display="inline"><mrow><mi>&omega;</mi><mo>=</mo><msqrt><mrow><mi>k</mi><mo>/</mo><mi>m</mi></mrow></msqrt></mrow></math>)。</p>
-        <p>最终形式：</p>
-        <math display="block"><mrow><mfrac><mrow><msup><mi>d</mi><mn>2</mn></msup><mi>x</mi></mrow><mrow><mi>d</mi><msup><mi>t</mi><mn>2</mn></msup></mrow></mfrac><mo>+</mo><msup><mi>&omega;</mi><mn>2</mn></msup><mi>x</mi><mo>=</mo><mn>0</mn></mrow></math>
+        <!-- MathML replaced with LaTeX -->
+        $$m\frac{d^2x}{dt^2} = -kx$$
+        <!-- MathML replaced with LaTeX -->
+        $$\frac{d^2x}{dt^2} + \frac{k}{m}x = 0$$
+        <p>定义简谐运动。引入角频率 \(\omega\)，其中 \(\omega^2 = k/m\) (或 \(\omega = \sqrt{\frac{k}{m}}\))。</p>
+        <!-- MathML replaced with LaTeX -->
+        $$\frac{d^2x}{dt^2} + \omega^2x = 0$$
     </div>
 
     <script type="module" src="shm.js"></script>
+    <!-- ADD THIS SCRIPT TO TRIGGER KATEX -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body, {
+                // ... a list of options if you need them ...
+                delimiters: [
+                    {left: '$$', right: '$$', display: true},
+                    {left: '\\[', right: '\\]', display: true},
+                    {left: '\\(', right: '\\)', display: false},
+                    {left: '$', right: '$', display: false}
+                ]
+            });
+        });
+    </script>
 </body>
 </html>
