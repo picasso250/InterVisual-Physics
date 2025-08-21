@@ -1,44 +1,15 @@
-/* ===================================================
-   Common Design System (Adapted from Calm UI)
-   =================================================== */
-:root {
-  /* Base Palette */
-  --bg: #f6f7f9;
-  --panel: #ffffff;
-  --text: #0f172a;     /* slate-900 */
-  --muted: #5b6878;    /* calm grey */
-  --border: #e5e7eb;   /* subtle border */
-  --ring: #c7d2fe;     /* focus ring */
-  --accent: #2563eb;   /* blue-600 */
-  --accent-weak: #eff6ff; /* blue-50 */
-  --shadow: 0 1px 2px rgba(15, 23, 42, 0.06), 0 6px 20px rgba(15, 23, 42, 0.04);
+/* Common styles are now in common.css */
 
+:root {
   /* Simulation Vector Colors */
   --color-vx: #2563eb; /* blue-600 */
   --color-vy: #16a34a; /* green-600 */
   --color-v: #475569;  /* slate-600 */
   --color-g: #94a3b8;  /* slate-400 */
-
-  /* Layout & Fonts */
-  --radius: 14px;
-  --space-2: 12px;
-  --space-4: 20px;
-  --space-5: 24px;
-  --font-sys: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Noto Sans, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #0b1220;
-    --panel: #0f172a;
-    --text: #e5e7eb;
-    --muted: #94a3b8;
-    --border: #1f2937;
-    --ring: #1d4ed8;
-    --accent: #60a5fa;
-    --accent-weak: #0b254a;
-    --shadow: 0 1px 2px rgba(0,0,0,0.35), 0 8px 24px rgba(0,0,0,0.35);
-
     /* Dark Mode Vector Colors */
     --color-vx: #60a5fa; /* blue-400 */
     --color-vy: #4ade80; /* green-400 */
@@ -47,109 +18,13 @@
   }
 }
 
-* { box-sizing: border-box; }
-
-html, body {
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-  font-family: var(--font-sys);
-  color: var(--text);
-  background: var(--bg);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-canvas {
-  display: block;
-}
-
-/* ===========================
-   Simulation UI Elements
-   =========================== */
-
-/* Back Navigation Link */
-.back-link {
-  position: absolute;
-  top: var(--space-4);
-  left: var(--space-4);
-  z-index: 20;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 12px 8px 8px;
-  background: var(--panel);
-  color: var(--muted);
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  text-decoration: none;
-  font-size: 14px;
-  font-weight: 600;
-  box-shadow: var(--shadow);
-  transition: all .2s ease;
-}
-.back-link:hover {
-  color: var(--accent);
-  border-color: color-mix(in srgb, var(--accent) 20%, var(--border));
-  background: var(--accent-weak);
-}
-.back-link:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 4px var(--ring);
-}
-
-/* Top Info Banner */
-#info {
-  position: absolute;
-  top: var(--space-4);
-  left: 50%;
-  transform: translateX(-50%);
-  width: auto;
-  padding: var(--space-2) var(--space-4);
-  font-size: 15px;
-  color: var(--muted);
-  user-select: none;
-  z-index: 10;
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  box-shadow: var(--shadow);
-  white-space: nowrap;
-}
-
-/* Shared UI Panel Style */
-.ui-panel {
-  position: absolute;
-  background: var(--panel);
-  padding: var(--space-4);
-  border-radius: var(--radius);
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow);
-  z-index: 10;
-  user-select: none;
-  transition: opacity 0.3s ease-in-out;
-  font-size: 14px;
-}
-.ui-panel.hidden {
-  opacity: 0;
-  pointer-events: none;
-}
-
 /* Specific Panel Positioning */
 #controls { top: var(--space-4); right: var(--space-4); }
 #explanation { top: var(--space-4); left: var(--space-4); margin-top: 64px; max-width: 280px;}
 #dataDisplayContainer { top: calc(var(--space-4) + 90px); right: var(--space-4); width: 220px; }
 #formulaExplanation { bottom: var(--space-4); right: var(--space-4); max-width: 320px; font-size: 13px; }
 
-/* REMOVE ALL #controls div, label, span, and input[type=range] styles. */
-/* THEY ARE NOW IN controls.css */
-
-/* ... (Keep .ui-panel p, h3, and color styles) ... */
 /* Panel Text & Colors */
-.ui-panel p { margin: 0 0 8px; line-height: 1.6; }
-.ui-panel p:last-child { margin-bottom: 0; }
-.ui-panel h3 { margin: 0 0 10px; font-size: 16px; letter-spacing: -0.01em; }
 .color-vx { color: var(--color-vx); font-weight: 600; }
 .color-vy { color: var(--color-vy); font-weight: 600; }
 .color-g { color: var(--color-g); font-weight: 600; }

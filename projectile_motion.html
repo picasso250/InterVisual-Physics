@@ -4,12 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>抛体运动模拟 | 物理现象互动实验室</title>
+    <!-- COMMON STYLES FIRST -->
+    <link rel="stylesheet" href="common.css">
+    <!-- PAGE-SPECIFIC STYLES -->
     <link rel="stylesheet" href="projectile_motion.css">
     <link rel="stylesheet" href="data_display.css">
-    <link rel="stylesheet" href="controls.css"> <!-- ADD THIS LINE -->
+    <link rel="stylesheet" href="controls.css">
 </head>
 <body>
-    <!-- ... (back-link, canvas, info div are unchanged) ... -->
+    <!-- ... (body content is unchanged) ... -->
     <a href="index.html" class="back-link" aria-label="返回主页">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="20" height="20">
             <path fill-rule="evenodd" d="M12.79 5.23a.75.75 0 010 1.06L9.06 10l3.73 3.71a.75.75 0 11-1.06 1.06l-4.25-4.25a.75.75 0 010-1.06l4.25-4.25a.75.75 0 011.06 0z" clip-rule="evenodd" />
@@ -23,7 +26,7 @@
     <!-- Controls panel is now empty, will be populated by JS -->
     <div id="controls" class="ui-panel controls-panel"></div>
 
-    <!-- ... (dataDisplayContainer and other panels are unchanged) ... -->
+    <!-- ... (rest of the body is unchanged) ... -->
     <div id="dataDisplayContainer" class="ui-panel"></div>
     <div id="explanation" class="ui-panel">
         <p><span class="color-g">重力 (G):</span> 恒定向下，使垂直速度 <span class="color-vy">Vy</span> 持续改变。</p>

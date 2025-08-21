@@ -1,45 +1,16 @@
-/* ===================================================
-   Common Design System (Adapted from Calm UI)
-   =================================================== */
-:root {
-  /* Base Palette */
-  --bg: #f6f7f9;
-  --panel: #ffffff;
-  --text: #0f172a;     /* slate-900 */
-  --muted: #5b6878;    /* calm grey */
-  --border: #e5e7eb;   /* subtle border */
-  --ring: #c7d2fe;     /* focus ring */
-  --accent: #2563eb;   /* blue-600 */
-  --accent-weak: #eff6ff; /* blue-50 */
-  --shadow: 0 1px 2px rgba(15, 23, 42, 0.06), 0 6px 20px rgba(15, 23, 42, 0.04);
+/* Common styles are now in common.css */
 
+:root {
   /* SHM Vector Colors */
   --color-x: #2563eb; /* blue-600 (Displacement) */
   --color-v: #16a34a; /* green-600 (Velocity) */
   --color-a: #f59e0b; /* amber-500 (Acceleration) */
   --color-f: #dc2626; /* red-600 (Force) */
   --color-time: #475569; /* slate-600 */
-
-  /* Layout & Fonts */
-  --radius: 14px;
-  --space-2: 12px;
-  --space-4: 20px;
-  --space-5: 24px;
-  --font-sys: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Noto Sans, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #0b1220;
-    --panel: #0f172a;
-    --text: #e5e7eb;
-    --muted: #94a3b8;
-    --border: #1f2937;
-    --ring: #1d4ed8;
-    --accent: #60a5fa;
-    --accent-weak: #0b254a;
-    --shadow: 0 1px 2px rgba(0,0,0,0.35), 0 8px 24px rgba(0,0,0,0.35);
-
     /* Dark Mode SHM Vector Colors */
     --color-x: #60a5fa; /* blue-400 */
     --color-v: #4ade80; /* green-400 */
@@ -49,88 +20,17 @@
   }
 }
 
-* { box-sizing: border-box; }
-
-html, body {
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-  font-family: var(--font-sys);
-  color: var(--text);
-  background: var(--bg);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-canvas {
-  display: block;
-}
-
-/* ===========================
-   Simulation UI Elements
-   =========================== */
-
-/* Top Info Banner */
-#info {
-  position: absolute;
-  top: var(--space-4);
-  left: 50%;
-  transform: translateX(-50%);
-  width: auto;
-  padding: var(--space-2) var(--space-4);
-  font-size: 15px;
-  color: var(--muted);
-  user-select: none;
-  z-index: 10;
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  box-shadow: var(--shadow);
-  white-space: nowrap;
-}
-
-/* Shared UI Panel Style */
-.ui-panel {
-  position: absolute;
-  background: var(--panel);
-  padding: var(--space-4);
-  border-radius: var(--radius);
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow);
-  z-index: 10;
-  user-select: none;
-  transition: opacity 0.3s ease-in-out;
-  font-size: 14px;
-}
-.ui-panel.hidden {
-  opacity: 0;
-  pointer-events: none;
-}
-
 /* Specific Panel Positioning */
 #controls { top: var(--space-4); right: var(--space-4); }
 #dataDisplay { bottom: var(--space-4); left: var(--space-4); width: 240px; }
 #formulaExplanation { bottom: var(--space-4); right: var(--space-4); max-width: 380px; font-size: 13px; }
 
-
-/* REMOVED all specific styles for #controls content (div, label, span, input, button) */
-/* They are now managed by controls.css */
-
-
-/* Panel Text & Colors (for formula panel) */
-.ui-panel p { margin: 0 0 8px; line-height: 1.6; }
-.ui-panel p:last-child { margin-bottom: 0; }
-.ui-panel h3 { margin: 0 0 10px; font-size: 16px; letter-spacing: -0.01em; }
+/* Panel Text & Colors */
 .color-x { color: var(--color-x); font-weight: 600; }
 .color-v { color: var(--color-v); font-weight: 600; }
 .color-a { color: var(--color-a); font-weight: 600; }
 .color-f { color: var(--color-f); font-weight: 600; }
 .color-time { color: var(--color-time); font-weight: 600; }
-
-/* The DataDisplay component will use the above classes directly.
-   No further specific styling for #dataDisplay is needed here,
-   as data_display.css handles the table layout. */
 
 /* Styles for formula panel MathML elements, ensuring they match text color */
 #formulaExplanation math {
