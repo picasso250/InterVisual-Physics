@@ -158,10 +158,10 @@ function initProjectileSimulation() {
             ctx.setLineDash([]); // 重置为实线
         }
 
-        // 3. 绘制小球 (黑色轮廓)
+        // 3. 绘制小球
         ctx.beginPath();
         ctx.arc(ball.x, ball.y, ballRadius, 0, Math.PI * 2);
-        ctx.strokeStyle = '#000000';
+        ctx.strokeStyle = '#eeeeee';
         ctx.lineWidth = 1.5;
         ctx.stroke();
         ctx.closePath();
@@ -284,10 +284,10 @@ function initShmSimulation() {
             ctx.stroke();
         }
 
-        // 3. 绘制物体 (黑色轮廓)
+        // 3. 绘制物体
         ctx.beginPath();
         ctx.rect(mass.x - massWidth / 2, mass.y - massHeight / 2, massWidth, massHeight);
-        ctx.strokeStyle = '#000000';
+        ctx.strokeStyle = '#dddddd';
         ctx.lineWidth = 1.5;
         ctx.stroke();
         ctx.closePath();

@@ -1,107 +1,331 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>我的物理模拟</title>
-    <link rel="stylesheet" href="common.css"> <!-- 引入公共样式 -->
-    <style>
-        /* index.html 自身的样式 */
-        body {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh; /* 确保内容居中在整个视口 */
-            background-color: #f0f0f0;
-            overflow: auto; /* Allow scroll if content is too long */
-        }
-        .container {
-            background-color: #fff;
-            padding: 30px 40px;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-            text-align: center;
-            max-width: 600px;
-            width: 90%;
-            margin: 20px; /* Add some margin for smaller screens */
-        }
-        h1 {
-            color: #2c3e50;
-            margin-bottom: 25px;
-            font-size: 2.2em;
-        }
-        .simulation-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-        .simulation-list li {
-            margin-bottom: 25px; /* 增加底部外边距，为 Canvas 留出空间 */
-            display: flex;
-            flex-direction: column;
-            align-items: center; /* 使链接和 Canvas 在水平方向居中 */
-        }
-        .simulation-list li a {
-            display: block;
-            width: calc(100% - 50px); /* 宽度调整，与 padding 结合 */
-            max-width: 400px; /* 限制最大宽度 */
-            padding: 15px 25px;
-            background-color: #007bff;
-            color: white;
-            text-decoration: none;
-            border-radius: 8px;
-            font-size: 1.1em;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-            box-shadow: 0 2px 8px rgba(0, 123, 255, 0.2);
-            margin-bottom: 15px; /* 链接和 Canvas 之间的间距 */
-        }
-        .simulation-list li a:hover {
-            background-color: #0056b3;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
-        }
-        .simulation-list li a:active {
-            transform: translateY(0);
-            box-shadow: 0 1px 4px rgba(0, 123, 255, 0.2);
-        }
-        /* 迷你 Canvas 的样式 */
-        .mini-simulation-container {
-            width: 100%; /* 容器占据父元素全部宽度 */
-            display: flex;
-            justify-content: center; /* Canvas 在容器中居中 */
-        }
-        .mini-simulation-container canvas {
-            width: 100%; /* Canvas 在容器内响应式 */
-            max-width: 400px; /* 限制 Canvas 的最大宽度 */
-            height: 120px; /* 固定高度以保持一致性 */
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            background-color: #f8f8f8; /* 略微偏白的背景色 */
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light dark" />
+  <title>物理现象互动实验室 | 探索科学之美</title>
+  <style>
+    /* =========================
+       Design Tokens (Calm UI)
+       ========================= */
+    :root {
+      --bg: #f6f7f9;
+      --panel: #ffffff;
+      --text: #0f172a;     /* slate-900 */
+      --muted: #5b6878;    /* calm grey */
+      --border: #e5e7eb;   /* subtle border */
+      --ring: #c7d2fe;     /* focus ring */
+      --accent: #2563eb;   /* blue-600 */
+      --accent-weak: #eff6ff; /* blue-50 */
+      --shadow: 0 1px 2px rgba(15, 23, 42, 0.06), 0 6px 20px rgba(15, 23, 42, 0.04);
+      --radius: 14px;
+      --space-1: 8px;
+      --space-2: 12px;
+      --space-3: 16px;
+      --space-4: 20px;
+      --space-5: 24px;
+      --space-6: 32px;
+      --space-7: 40px;
+      --space-8: 56px;
+      --font-sys: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Noto Sans, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0b1220;         /* deep calm */
+        --panel: #0f172a;      /* slate-900 */
+        --text: #e5e7eb;       /* slate-200 */
+        --muted: #94a3b8;      /* slate-400 */
+        --border: #1f2937;     /* slate-800 */
+        --ring: #1d4ed8;       /* blue-700 */
+        --accent: #60a5fa;     /* blue-400 */
+        --accent-weak: #0b254a;/* blue-950-ish */
+        --shadow: 0 1px 2px rgba(0,0,0,0.35), 0 8px 24px rgba(0,0,0,0.35);
+      }
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      font-family: var(--font-sys);
+      color: var(--text);
+      background: var(--bg);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* ===== Container ===== */
+    .container {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: var(--space-7) var(--space-5);
+    }
+
+    /* ===== Header ===== */
+    header {
+      margin-bottom: var(--space-6);
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: 6px 10px;
+      background: var(--accent-weak);
+      color: var(--accent);
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: .02em;
+      border: 1px solid var(--border);
+    }
+
+    h1 {
+      font-size: clamp(28px, 4.2vw, 40px);
+      line-height: 1.15;
+      margin: var(--space-3) 0 var(--space-2);
+      font-weight: 750;
+      letter-spacing: -0.02em;
+    }
+
+    .tagline {
+      font-size: 16px;
+      color: var(--muted);
+      margin-bottom: var(--space-5);
+    }
+
+    .intro {
+      max-width: 760px;
+      color: var(--muted);
+      line-height: 1.75;
+      font-size: 15px;
+    }
+
+    /* ===== Feature bullets ===== */
+    .features {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: var(--space-4);
+      margin: var(--space-7) 0 var(--space-6);
+    }
+
+    @media (max-width: 900px) {
+      .features { grid-template-columns: 1fr; }
+    }
+
+    .feature {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: var(--space-5);
+      box-shadow: var(--shadow);
+    }
+
+    .feature h3 {
+      font-size: 18px;
+      margin: 0 0 var(--space-2);
+      letter-spacing: -0.01em;
+    }
+
+    .feature p { color: var(--muted); margin: 0; }
+
+    /* ===== Simulation list ===== */
+    .simulation-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--space-4);
+    }
+
+    @media (max-width: 900px) {
+      .simulation-list { grid-template-columns: 1fr; }
+    }
+
+    .simulation-item {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      transition: border-color .2s ease, background-color .2s ease;
+    }
+
+    .simulation-item:hover { border-color: color-mix(in srgb, var(--accent) 20%, var(--border)); }
+
+    .simulation-content {
+      position: relative;
+      padding: var(--space-5);
+      display: grid;
+      gap: var(--space-3);
+      cursor: pointer; /* whole card */
+    }
+
+    .simulation-item h2 {
+      font-size: 20px;
+      letter-spacing: -0.01em;
+      margin: 0;
+    }
+
+    .simulation-item p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 15px;
+    }
+
+    /* Quiet button */
+    .simulation-link {
+      --btn-h: 34px;
+      position: absolute;
+      top: var(--space-5);
+      right: var(--space-5);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: var(--btn-h);
+      padding: 0 12px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 14px;
+      letter-spacing: .01em;
+      transition: background-color .15s ease, border-color .15s ease;
+    }
+
+    .simulation-link:hover { background: var(--accent-weak); border-color: color-mix(in srgb, var(--accent) 25%, var(--border)); }
+    .simulation-link:focus-visible { outline: none; box-shadow: 0 0 0 4px var(--ring); }
+
+    /* Mini-canvas preview */
+    .mini-simulation-container {
+      height: 180px;
+      border: 1px solid var(--border);
+      border-radius: calc(var(--radius) - 4px);
+      background: linear-gradient(180deg, rgba(0,0,0,0.02), rgba(0,0,0,0.00));
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    canvas { display: block; border-radius: 10px; }
+
+    /* ===== Future section ===== */
+    .future-projects {
+      margin-top: var(--space-7);
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: var(--space-6);
+      text-align: center;
+      box-shadow: var(--shadow);
+    }
+
+    .future-projects h2 { font-size: 20px; margin: 0 0 var(--space-2); }
+    .future-projects p { color: var(--muted); margin: 0; }
+
+    footer {
+      color: var(--muted);
+      text-align: center;
+      margin-top: var(--space-7);
+      padding: var(--space-5) 0 var(--space-7);
+      border-top: 1px solid var(--border);
+      font-size: 13px;
+    }
+
+    /* ===== Accessibility & motion ===== */
+    .simulation-content[role="link"] { outline: none; }
+    .simulation-content:focus-visible { box-shadow: 0 0 0 4px var(--ring); border-radius: calc(var(--radius) - 2px); }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { transition: none !important; }
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>我的物理模拟</h1>
-        <p>探索各种物理现象的互动可视化。</p>
-        <ul class="simulation-list">
-            <li>
-                <a href="projectile_motion.html">抛体运动模拟</a>
-                <div class="mini-simulation-container">
-                    <canvas id="projectileMiniCanvas"></canvas>
-                </div>
-            </li>
-            <li>
-                <a href="shm.html">简谐运动模拟 </a>
-                <div class="mini-simulation-container">
-                    <canvas id="shmMiniCanvas"></canvas>
-                </div>
-            </li>
-            <!-- 未来添加更多模拟的链接 -->
-        </ul>
-    </div>
-    <!-- 引入新的 JavaScript 文件 -->
-    <script src="simulations.js"></script>
+  <div class="container">
+    <header>
+      <span class="brand">物理现象互动实验室</span>
+      <h1>探索自然法则的交互式模拟</h1>
+      <p class="tagline">可视化探索自然法则，交互式体验科学之美</p>
+    </header>
+
+    <section class="features" aria-label="产品特性">
+      <article class="feature">
+        <h3>实时计算</h3>
+        <p>基于明确的数值方法与单位约定，实时渲染物理过程。</p>
+      </article>
+      <article class="feature">
+        <h3>交互控制</h3>
+        <p>通过滑块与输入框调整初始条件与参数，观察系统响应。</p>
+      </article>
+      <article class="feature">
+        <h3>可教学</h3>
+        <p>展示关键量，适合课堂与自学。</p>
+      </article>
+    </section>
+
+    <ul class="simulation-list">
+      <li class="simulation-item">
+        <div class="simulation-content" role="link" tabindex="0" aria-label="打开抛体运动模拟" data-href="projectile_motion.html">
+          <h2>抛体运动模拟</h2>
+          <p>在恒定重力下，观察速度分解与轨迹随参数的变化。</p>
+          <a class="simulation-link" href="projectile_motion.html" aria-label="前往抛体运动模拟">打开</a>
+          <div class="mini-simulation-container" aria-hidden="true">
+            <canvas id="projectileMiniCanvas" width="320" height="160"></canvas>
+          </div>
+        </div>
+      </li>
+
+      <li class="simulation-item">
+        <div class="simulation-content" role="link" tabindex="0" aria-label="打开简谐运动模拟" data-href="shm.html">
+          <h2>简谐运动模拟</h2>
+          <p>可视化弹簧振子与单摆的周期运动，调整质量、刚度与初相位。</p>
+          <a class="simulation-link" href="shm.html" aria-label="前往简谐运动模拟">打开</a>
+          <div class="mini-simulation-container" aria-hidden="true">
+            <canvas id="shmMiniCanvas" width="320" height="160"></canvas>
+          </div>
+        </div>
+      </li>
+    </ul>
+
+    <section class="future-projects">
+      <h2>更多模拟</h2>
+      <p>波动光学、电磁场、流体力学等模块将按主题逐步上线。</p>
+    </section>
+
+    <footer>
+            <p>物理现象互动实验室 &copy; 2025 | 让科学触手可及</p>
+    </footer>
+  </div>
+
+  <!-- 轻量行为脚本：让整块卡片可点且可键盘访问 -->
+  <script src="simulations.js" defer></script>
+  <script>
+    (function() {
+      const cards = document.querySelectorAll('.simulation-content');
+      cards.forEach(card => {
+        const href = card.getAttribute('data-href');
+        const anchor = card.querySelector('.simulation-link');
+        if (!href || !anchor) return;
+
+        card.addEventListener('click', (e) => {
+          if (e.target === anchor || anchor.contains(e.target)) return; // let anchor handle itself
+          window.location.href = href;
+        });
+        card.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            window.location.href = href;
+          }
+        });
+      });
+    })();
+  </script>
 </body>
 </html>
