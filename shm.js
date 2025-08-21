@@ -48,7 +48,7 @@ const wallWidth = 20;
 const wallHeight = 200;
 const massWidth = 60;
 const massHeight = 60;
-const springCoilCount = 10; // 弹簧线圈的数量
+const springCoilCount = 20; // 弹簧线圈的数量
 const springCoilHeight = 15; // 每个弹簧线圈的高度
 
 // --- 动画状态 ---
