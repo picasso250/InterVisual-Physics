@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>重力抛物线小球</title>
     <link rel="stylesheet" href="projectile_motion.css">
+    <link rel="stylesheet" href="data_display.css"> <!-- 引入数据面板的样式 -->
     <!-- 如果需要更广泛的兼容性，可以考虑引入 MathJax 或 KaTeX -->
     <!-- 例如：
     <script type="text/javascript" async
@@ -29,39 +30,8 @@
         </div>
     </div>
 
-    <!-- 修改：实时数据展示面板使用表格结构 -->
-    <div id="dataDisplay" class="hidden">
-        <table>
-            <tr>
-                <td>时间 (t):</td>
-                <td><span id="timeValue" class="color-g">0.0</span></td>
-            </tr>
-            <tr>
-                <td>水平速度 (Vx):</td>
-                <td><span id="vxValue" class="color-vx">0.00</span></td>
-            </tr>
-            <tr>
-                <td>垂直速度 (Vy):</td>
-                <td><span id="vyValue" class="color-vy">0.00</span></td>
-            </tr>
-            <tr>
-                <td>合速度 (V):</td>
-                <td><span id="vValue" class="color-v">0.00</span></td>
-            </tr>
-            <tr>
-                <td>高度 (H):</td>
-                <td><span id="heightValue">0.00</span></td>
-            </tr>
-            <tr>
-                <td>水平距离 (X):</td>
-                <td><span id="distanceValue">0.00</span></td>
-            </tr>
-            <tr>
-                <td>重力 (G):</td>
-                <td><span id="gravityDisplayValue" class="color-g">0.00</span></td>
-            </tr>
-        </table>
-    </div>
+    <!-- 数据展示面板的占位符 -->
+    <div id="dataDisplayContainer"></div>
 
     <div id="explanation">
         <p><span class="color-g">重力 (G):</span> 恒定向下，使垂直速度 <span class="color-vy">Vy</span> 持续增加。</p>
@@ -70,7 +40,7 @@
         <p><span class="color-v">合速度 (V):</span> 是 <span class="color-vx">Vx</span> 和 <span class="color-vy">Vy</span> 的矢量和。</p>
     </div>
 
-    <!-- 修改：运动学公式面板改为微分形式，并使用 MathML -->
+    <!-- 运动学公式面板 -->
     <div id="formulaExplanation">
         <h3>运动学公式 (微分形式, 忽略空气阻力)</h3>
         <p>微分形式描述了物理量在极短时间段 (<span class="color-g">dt</span>) 内的变化。</p>

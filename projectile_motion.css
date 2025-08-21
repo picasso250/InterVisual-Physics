@@ -131,53 +131,6 @@ canvas {
 .color-g { color: #6c757d; font-weight: bold; } /* 灰色 */
 .color-v { color: #555555; font-weight: bold; } /* 合速度的颜色 */
 
-/* 新增：实时数据展示面板 */
-#dataDisplay {
-    position: absolute;
-    top: 20px; /* 定位在右上角 */
-    right: 20px; /* 定位在右上角 */
-    background-color: rgba(255, 255, 255, 0.85);
-    padding: 15px;
-    border-radius: 8px;
-    color: #333;
-    font-size: 0.9em;
-    max-width: 250px;
-    user-select: none;
-    z-index: 10;
-}
-
-#dataDisplay.hidden {
-    opacity: 0;
-    pointer-events: none; /* Prevent interaction when hidden */
-}
-
-/* --- Start: Modified #dataDisplay internal styling for table --- */
-#dataDisplay table {
-    width: 100%; /* Make table take full width of its container */
-    border-collapse: collapse; /* Remove space between table cells */
-}
-
-#dataDisplay td {
-    padding: 4px 0; /* Vertical spacing for each row */
-    white-space: nowrap; /* Prevent text wrapping in cells */
-}
-
-#dataDisplay td:first-child {
-    text-align: right; /* Left column (labels) right-aligned */
-    padding-right: 10px; /* Space between label and value */
-}
-
-#dataDisplay td:last-child {
-    text-align: right;
-}
-/* --- End: Modified #dataDisplay internal styling for table --- */
-
-/* The span styles are kept as they are still useful for applying color and boldness */
-#dataDisplay span {
-    font-weight: bold;
-}
-
-
 /* 新增：运动学公式面板 */
 #formulaExplanation {
     position: absolute;

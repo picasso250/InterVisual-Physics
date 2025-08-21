@@ -1,5 +1,6 @@
 // File: `projectile_motion.js`
 import { drawArrow } from './drawing_utils.js'; // Adjust path if needed
+import DataDisplay from './data_display.js'; // 新增：引入DataDisplay类
 
 const canvas = document.getElementById('gravityCanvas');
 const ctx = canvas.getContext('2d');
@@ -13,15 +14,19 @@ const gravityValueSpan = document.getElementById('gravityValue'); // 这个用�
 const initialSpeedSlider = document.getElementById('initialSpeedSlider');
 const initialSpeedValueSpan = document.getElementById('initialSpeedValue');
 
-// 新增：获取实时数据面板元素
-const dataDisplayDiv = document.getElementById('dataDisplay');
-const timeSpan = document.getElementById('timeValue');
-const vxValueSpan = document.getElementById('vxValue');
-const vyValueSpan = document.getElementById('vyValue');
-const vValueSpan = document.getElementById('vValue');
-const heightValueSpan = document.getElementById('heightValue');
-const distanceValueSpan = document.getElementById('distanceValue');
-const gravityDisplayValueSpan = document.getElementById('gravityDisplayValue'); // 用于显示在数据面板中
+// 定义数据展示面板的字段配置
+const displayFieldsConfig = [
+    { key: 'time', label: '时间 (t):', className: 'color-g', initialValue: '0.0' },
+    { key: 'vx', label: '水平速度 (Vx):', className: 'color-vx', initialValue: '0.00' },
+    { key: 'vy', label: '垂直速度 (Vy):', className: 'color-vy', initialValue: '0.00' },
+    { key: 'v', label: '合速度 (V):', className: 'color-v', initialValue: '0.00' },
+    { key: 'height', label: '高度 (H):', initialValue: '0.00' },
+    { key: 'distance', label: '水平距离 (X):', initialValue: '0.00' },
+    { key: 'gravity', label: '重力 (G):', className: 'color-g', initialValue: '0.00' }
+];
+
+// 实例化数据展示面板组件，传入配置
+const dataDisplay = new DataDisplay('dataDisplayContainer', displayFieldsConfig);
 
 // 小球属性
 let ball = {
@@ -61,8 +66,6 @@ let maxHistoryX = -Infinity;
 // --- 初始化滑块值 ---
 function initializeControls() {
     gravitySlider.value = gravity;
-    // gravityValueSpan.textContent = gravity.toFixed(2); // 这个值现在由 updateDataDisplay() 更新
-
     initialSpeedSlider.value = initialSpeed;
     initialSpeedValueSpan.textContent = initialSpeed;
 }
@@ -106,8 +109,6 @@ function resetBall() {
     minHistoryX = Infinity;
     maxHistoryX = -Infinity;
 
-    // Remove `dataDisplayDiv.classList.remove('top-right');` and `dataDisplayDiv.classList.remove('hidden');`
-
     ball.x = ball.radius + 30;
     ball.y = canvas.height - ball.radius - horizonOffset;
 
@@ -117,31 +118,32 @@ function resetBall() {
 
     infoDiv.textContent = "点击这里开始 / 重新开始"; // 更新信息文本
     controlsDiv.classList.remove('hidden'); // 显示控制面板
-    explanationDiv.classList.remove('hidden'); // 显示解释面板
-    dataDisplayDiv.classList.remove('hidden'); // 显示数据面板 (确保在重置时可见)
+    dataDisplay.show(); // 显示数据面板 (确保在重置时可见)
     
     animate(); // 启动主物理动画
 }
 
 // --- 更新实时数据面板 ---
 function updateDataDisplay() {
-    // 将重力值也显示在数据面板中
-    gravityDisplayValueSpan.textContent = gravity.toFixed(2) + ' m/s²';
-    gravityValueSpan.textContent = gravity.toFixed(2); // 更新滑块旁的值
-
-    timeSpan.textContent = time.toFixed(1) + ' s'; // 时间保留1位小数
-    vxValueSpan.textContent = vx.toFixed(2) + ' m/s';
-    vyValueSpan.textContent = vy.toFixed(2) + ' m/s';
-    vValueSpan.textContent = Math.sqrt(vx * vx + vy * vy).toFixed(2) + ' m/s';
+    // 更新滑块旁的值
+    gravityValueSpan.textContent = gravity.toFixed(2); 
 
     // 计算高度（小球底部到地平线的距离）
     const currentHeight = (canvas.height - horizonOffset) - (ball.y + ball.radius);
-    heightValueSpan.textContent = Math.max(0, currentHeight).toFixed(2) + ' m'; // 确保高度不为负
-
     // 计算水平距离（相对于起始点）
     const initialBallX = ball.radius + 30;
     const currentDistance = ball.x - initialBallX;
-    distanceValueSpan.textContent = Math.max(0, currentDistance).toFixed(2) + ' m'; // 确保距离不为负 (如果往左运动则为0)
+
+    // 调用 DataDisplay 组件的 update 方法，传入所有需要的数据
+    dataDisplay.update({
+        time: time,
+        vx: vx,
+        vy: vy,
+        v: Math.sqrt(vx * vx + vy * vy),
+        height: currentHeight,
+        distance: currentDistance,
+        gravity: gravity
+    });
 }
 
 
@@ -340,8 +342,7 @@ function update() {
 
         infoDiv.textContent = "时间回溯模式：左右移动鼠标查看速度分解。点击任意位置重新开始。";
         controlsDiv.classList.add('hidden'); // 隐藏控制面板
-        // dataDisplayDiv.classList.add('top-right'); // REMOVED: dataDisplay is always top-right now
-        // explanationDiv.classList.add('hidden'); // Optional: hide explanation panel
+        dataDisplay.show(); // 确保数据面板在时间回溯模式下仍然可见
         
         // Initially draw the stopped ball on the ground, then mousemove will take over
         draw();
@@ -366,16 +367,13 @@ function update() {
         ballHistory = []; // Clear history if it flies off
         time = 0; // Reset time if it flies off
 
-        // Ensure dataDisplay is back to default position if ball flies off
-        // dataDisplayDiv.classList.remove('top-right'); // REMOVED: dataDisplay is always top-right now
         // 重置历史X轴范围
         minHistoryX = Infinity;
         maxHistoryX = -Infinity;
 
         infoDiv.textContent = "小球飞出屏幕。点击这里重新开始。";
         controlsDiv.classList.remove('hidden'); // 显示控制面板
-        explanationDiv.classList.remove('hidden'); // 显示解释面板
-        dataDisplayDiv.classList.remove('hidden'); // 显示数据面板
+        dataDisplay.show(); // 确保数据面板在小球飞出后仍然可见
         draw(); // Draw final state before exiting.
         console.log("Animation stopped (ball flew off screen).");
     }
@@ -445,9 +443,6 @@ document.addEventListener('mousemove', handleMouseMove); // 鼠标移动监听
 // 滑块事件监听
 gravitySlider.addEventListener('input', (event) => {
     gravity = parseFloat(event.target.value);
-    // gravityValueSpan.textContent = gravity.toFixed(2); // 统一到 updateDataDisplay
-    // 如果在时间回溯模式下调整重力，不会影响当前历史轨迹，但会影响下一次模拟。
-    // 在实时模式下调整重力，不会立即改变当前运动（因为需要reset），但会改变下一次reset的重力值。
     updateDataDisplay(); // 立即更新数据面板中的重力值
 });
 
