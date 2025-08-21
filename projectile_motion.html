@@ -6,8 +6,10 @@
     <title>抛体运动模拟 | 物理现象互动实验室</title>
     <link rel="stylesheet" href="projectile_motion.css">
     <link rel="stylesheet" href="data_display.css">
+    <link rel="stylesheet" href="controls.css"> <!-- ADD THIS LINE -->
 </head>
 <body>
+    <!-- ... (back-link, canvas, info div are unchanged) ... -->
     <a href="index.html" class="back-link" aria-label="返回主页">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="20" height="20">
             <path fill-rule="evenodd" d="M12.79 5.23a.75.75 0 010 1.06L9.06 10l3.73 3.71a.75.75 0 11-1.06 1.06l-4.25-4.25a.75.75 0 010-1.06l4.25-4.25a.75.75 0 011.06 0z" clip-rule="evenodd" />
@@ -18,54 +20,30 @@
     <canvas id="gravityCanvas"></canvas>
     <div id="info">点击开始</div>
 
-    <div id="controls" class="ui-panel">
-        <div>
-            <label for="gravitySlider">重力:</label>
-            <input type="range" id="gravitySlider" min="0.05" max="0.5" step="0.01">
-            <span id="gravityValue"></span>
-        </div>
-        <div>
-            <label for="initialSpeedSlider">初始速度:</label>
-            <input type="range" id="initialSpeedSlider" min="5" max="25" step="1">
-            <span id="initialSpeedValue"></span>
-        </div>
-    </div>
+    <!-- Controls panel is now empty, will be populated by JS -->
+    <div id="controls" class="ui-panel controls-panel"></div>
 
-    <!-- 数据展示面板的占位符 -->
+    <!-- ... (dataDisplayContainer and other panels are unchanged) ... -->
     <div id="dataDisplayContainer" class="ui-panel"></div>
-
     <div id="explanation" class="ui-panel">
         <p><span class="color-g">重力 (G):</span> 恒定向下，使垂直速度 <span class="color-vy">Vy</span> 持续改变。</p>
         <p><span class="color-vx">水平速度 (Vx):</span> 保持不变，因无水平外力。</p>
         <p><span class="color-vy">垂直速度 (Vy):</span> 受重力影响，向上减小，向下增大。</p>
         <p><span class="color-v">合速度 (V):</span> 是 <span class="color-vx">Vx</span> 和 <span class="color-vy">Vy</span> 的矢量和。</p>
     </div>
-
-    <!-- 运动学公式面板 -->
     <div id="formulaExplanation"  class="ui-panel">
         <h3>运动学公式 (微分形式)</h3>
         <p>微分形式描述了物理量在极短时间段 (<span class="color-g">dt</span>) 内的变化。</p>
         <p><b>水平方向 (<span class="color-vx">x轴</span>):</b></p>
-        <p>
-            <math display="block"><mrow><mi>dV</mi><msub><mi></mi><mi>x</mi></msub><mo>=</mo><mn>0</mn></mrow></math>
-        </p>
-        <p>
-            <math display="block"><mrow><mi>dX</mi><mo>=</mo><msub><mi>V</mi><mi>x</mi></msub><mi>dt</mi></mrow></math>
-        </p>
+        <p><math display="block"><mrow><mi>dV</mi><msub><mi></mi><mi>x</mi></msub><mo>=</mo><mn>0</mn></mrow></math></p>
+        <p><math display="block"><mrow><mi>dX</mi><mo>=</mo><msub><mi>V</mi><mi>x</mi></msub><mi>dt</mi></mrow></math></p>
         <p><b>垂直方向 (<span class="color-vy">y轴</span>):</b></p>
-        <p>
-            <math display="block"><mrow><mi>dV</mi><msub><mi></mi><mi>y</mi></msub><mo>=</mo><mi>g</mi><mi>dt</mi></mrow></math>
-        </p>
-        <p>
-            <math display="block"><mrow><mi>dY</mi><mo>=</mo><msub><mi>V</mi><mi>y</mi></msub><mi>dt</mi></mrow></math>
-        </p>
+        <p><math display="block"><mrow><mi>dV</mi><msub><mi></mi><mi>y</mi></msub><mo>=</mo><mi>g</mi><mi>dt</mi></mrow></math></p>
+        <p><math display="block"><mrow><mi>dY</mi><mo>=</mo><msub><mi>V</mi><mi>y</mi></msub><mi>dt</mi></mrow></math></p>
         <p><b>合速度 (<span class="color-v">V</span>):</b></p>
         <p>合速度 <span class="color-v">V</span> 是 <span class="color-vx">V<sub>x</sub></span> 和 <span class="color-vy">V<sub>y</sub></span> 的矢量和：</p>
-        <p>
-            <math display="block"><mrow><mover accent="true"><mi>V</mi><mo>→</mo></mover><mo>=</mo><mover accent="true"><msub><mi>V</mi><mi>x</mi></msub><mo>→</mo></mover><mo>+</mo><mover accent="true"><msub><mi>V</mi><mi>y</mi></msub><mo>→</mo></mover></mrow></math>
-        </p>
+        <p><math display="block"><mrow><mover accent="true"><mi>V</mi><mo>→</mo></mover><mo>=</mo><mover accent="true"><msub><mi>V</mi><mi>x</mi></msub><mo>→</mo></mover><mo>+</mo><mover accent="true"><msub><mi>V</mi><mi>y</mi></msub><mo>→</mo></mover></mrow></math></p>
     </div>
-
     <script type="module" src="projectile_motion.js"></script>
 </body>
 </html>

@@ -1,18 +1,17 @@
 // File: `projectile_motion.js`
 import { drawArrow } from './drawing_utils.js';
 import DataDisplay from './data_display.js';
+import ControlsManager from './controls_manager.js'; // IMPORT NEW MODULE
 
 const canvas = document.getElementById('gravityCanvas');
 const ctx = canvas.getContext('2d');
 const infoDiv = document.getElementById('info');
-const controlsDiv = document.getElementById('controls');
+const controlsContainer = document.getElementById('controls'); // Renamed for clarity
 const explanationDiv = document.getElementById('explanation');
 const dataDisplayContainer = document.getElementById('dataDisplayContainer');
 
-const gravitySlider = document.getElementById('gravitySlider');
-const gravityValueSpan = document.getElementById('gravityValue');
-const initialSpeedSlider = document.getElementById('initialSpeedSlider');
-const initialSpeedValueSpan = document.getElementById('initialSpeedValue');
+// REMOVE old slider/span element getters
+
 
 // NEW: Read colors from CSS custom properties for canvas drawing
 const style = getComputedStyle(document.documentElement);
@@ -61,11 +60,28 @@ let time = 0;
 let minHistoryX = Infinity;
 let maxHistoryX = -Infinity;
 
-function initializeControls() {
-    gravitySlider.value = gravity;
-    initialSpeedSlider.value = initialSpeed;
-    initialSpeedValueSpan.textContent = initialSpeed;
+
+// --- Controls Setup ---
+// ENHANCED: Add `unit` and `precision` for better display formatting in ControlsManager.
+const controlsConfig = [
+    { type: 'slider', key: 'gravity', label: '重力:', min: 0.05, max: 0.5, step: 0.01, initialValue: gravity, unit: ' m/s²', precision: 2 },
+    { type: 'slider', key: 'initialSpeed', label: '初始速度:', min: 5, max: 25, step: 1, initialValue: initialSpeed, unit: ' m/s', precision: 0 }
+];
+
+function onControlsUpdate(key, value) {
+    if (key === 'gravity') {
+        gravity = value;
+        // Update data display immediately if not animating
+        if (!isAnimating) updateDataDisplay();
+    } else if (key === 'initialSpeed') {
+        initialSpeed = value;
+    }
 }
+
+const controlsManager = new ControlsManager(controlsContainer, controlsConfig, onControlsUpdate);
+
+// REMOVE initializeControls() function
+
 
 function resizeCanvas() {
     canvas.width = window.innerWidth;
@@ -94,16 +110,21 @@ function resetBall() {
     maxHistoryX = -Infinity;
     ball.x = ball.radius + 30;
     ball.y = canvas.height - ball.radius - horizonOffset;
-    vx = initialSpeed * Math.cos(Math.PI / 4);
-    vy = -initialSpeed * Math.sin(Math.PI / 4);
+    
+    // Use the manager to get the latest value
+    const currentInitialSpeed = controlsManager.getValue('initialSpeed');
+    vx = currentInitialSpeed * Math.cos(Math.PI / 4);
+    vy = -currentInitialSpeed * Math.sin(Math.PI / 4);
+    
     infoDiv.textContent = "点击任意位置重新开始";
     document.querySelectorAll('.ui-panel').forEach(p => p.classList.remove('hidden'));
-    explanationDiv.classList.add('hidden'); // Hide explanation initially
+    explanationDiv.classList.add('hidden');
     animate();
 }
 
 function updateDataDisplay() {
-    gravityValueSpan.textContent = gravity.toFixed(2);
+    // gravityValueSpan.textContent = gravity.toFixed(2); // REMOVE
+    const currentGravity = controlsManager.getValue('gravity'); // GET from manager
     const currentHeightRaw = (canvas.height - horizonOffset) - (ball.y + ball.radius);
     const initialBallX = ball.radius + 30;
     const currentDistanceRaw = ball.x - initialBallX;
@@ -115,7 +136,7 @@ function updateDataDisplay() {
         v: combinedSpeedRaw.toFixed(2) + ' m/s',
         height: Math.max(0, currentHeightRaw).toFixed(2) + ' m',
         distance: Math.max(0, currentDistanceRaw).toFixed(2) + ' m',
-        gravity: gravity.toFixed(2) + ' m/s²'
+        gravity: currentGravity.toFixed(2) + ' m/s²' // Use value from manager
     };
     dataDisplay.update(dataToDisplay);
 }
@@ -254,19 +275,14 @@ function handleMouseMove(event) {
     draw();
 }
 
+// UPDATE event listeners section
+
 document.addEventListener('click', () => resetBall());
 window.addEventListener('resize', resizeCanvas);
 document.addEventListener('mousemove', handleMouseMove);
 
-gravitySlider.addEventListener('input', (e) => {
-    gravity = parseFloat(e.target.value);
-    updateDataDisplay();
-});
-initialSpeedSlider.addEventListener('input', (e) => {
-    initialSpeed = parseFloat(e.target.value);
-    initialSpeedValueSpan.textContent = initialSpeed;
-});
+// REMOVE old slider event listeners
 
-initializeControls();
+// Initial setup calls
 resizeCanvas();
 updateDataDisplay();

@@ -1,0 +1,106 @@
+/* File: `controls.css` */
+/* Generic, reusable styles for the UI controls panel */
+
+/* The .controls-panel class is added to the shared .ui-panel element */
+.controls-panel h3 {
+    margin: 0 0 10px;
+    font-size: 16px;
+    letter-spacing: -0.01em;
+    color: var(--text);
+}
+
+.controls-panel .control-row {
+    margin-bottom: var(--space-2);
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.controls-panel .control-row:last-child {
+    margin-bottom: 0;
+}
+
+.controls-panel label {
+    width: 90px;
+    font-weight: 600;
+    color: var(--muted);
+    flex-shrink: 0; /* Prevent label from shrinking */
+}
+
+.controls-panel .control-value {
+    /* width: 60px; */
+    text-align: right;
+    font-weight: 600;
+    font-family: monospace, var(--font-sys);
+    font-size: 15px;
+    flex-shrink: 0;
+}
+
+/* Styled Sliders */
+.controls-panel input[type="range"] {
+    flex-grow: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 6px;
+    background: var(--border);
+    outline: none;
+    border-radius: 3px;
+    transition: background .2s ease;
+}
+
+.controls-panel input[type="range"]:hover {
+    background: color-mix(in srgb, var(--text) 10%, var(--border));
+}
+
+.controls-panel input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    background: var(--accent);
+    border-radius: 50%;
+    border: 2px solid var(--panel);
+    cursor: pointer;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+}
+
+.controls-panel input[type="range"]::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    background: var(--accent);
+    border-radius: 50%;
+    border: 2px solid var(--panel);
+    cursor: pointer;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+}
+
+.controls-panel input[type="range"]:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 4px var(--ring);
+    border-radius: 4px; /* for the focus shadow */
+}
+
+/* Button Style */
+.controls-panel button {
+    display: block;
+    width: 100%;
+    padding: 10px 0;
+    margin-top: var(--space-2);
+    background-color: var(--accent);
+    color: var(--panel); /* Use panel color for text for contrast */
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.controls-panel button:hover {
+    background-color: color-mix(in srgb, var(--accent) 90%, var(--text));
+}
+
+.controls-panel button:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 4px var(--ring);
+}

@@ -142,55 +142,10 @@ canvas {
 #dataDisplayContainer { top: calc(var(--space-4) + 90px); right: var(--space-4); width: 220px; }
 #formulaExplanation { bottom: var(--space-4); right: var(--space-4); max-width: 320px; font-size: 13px; }
 
-/* Control Panel Content */
-#controls div {
-  margin-bottom: var(--space-2);
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-}
-#controls div:last-child { margin-bottom: 0; }
-#controls label { width: 70px; font-weight: 600; color: var(--muted); }
-#controls span { width: 30px; text-align: right; font-weight: 600; font-family: monospace, var(--font-sys); font-size: 15px;}
+/* REMOVE ALL #controls div, label, span, and input[type=range] styles. */
+/* THEY ARE NOW IN controls.css */
 
-/* Styled Sliders */
-#controls input[type="range"] {
-  flex-grow: 1;
-  -webkit-appearance: none;
-  appearance: none;
-  height: 6px;
-  background: var(--border);
-  outline: none;
-  border-radius: 3px;
-  transition: background .2s ease;
-}
-#controls input[type="range"]:hover { background: color-mix(in srgb, var(--text) 10%, var(--border)); }
-#controls input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 18px;
-  height: 18px;
-  background: var(--accent);
-  border-radius: 50%;
-  border: 2px solid var(--panel);
-  cursor: pointer;
-  box-shadow: 0 0 0 1px rgba(0,0,0,0.1);
-}
-#controls input[type="range"]::-moz-range-thumb {
-  width: 18px;
-  height: 18px;
-  background: var(--accent);
-  border-radius: 50%;
-  border: 2px solid var(--panel);
-  cursor: pointer;
-  box-shadow: 0 0 0 1px rgba(0,0,0,0.1);
-}
-#controls input[type="range"]:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 4px var(--ring);
-  border-radius: 4px; /* for the focus shadow */
-}
-
+/* ... (Keep .ui-panel p, h3, and color styles) ... */
 /* Panel Text & Colors */
 .ui-panel p { margin: 0 0 8px; line-height: 1.6; }
 .ui-panel p:last-child { margin-bottom: 0; }
