@@ -33,7 +33,7 @@ const displayFieldsConfig = [
     { key: 'v', label: '合速度 (V)', className: 'color-v', initialValue: '0.00 m/s' },
     { key: 'height', label: '高度 (H)', initialValue: '0.00 m' },
     { key: 'distance', label: '水平距离 (X)', initialValue: '0.00 m' },
-    { key: 'gravity', label: '重力 (G)', className: 'color-g', initialValue: '0.00 m/s²' }
+    { key: 'gravity', label: '重力加速度 (G)', className: 'color-g', initialValue: '0.00 m/s²' }
 ];
 
 const dataDisplay = new DataDisplay(dataDisplayContainer, displayFieldsConfig);
@@ -64,7 +64,7 @@ let maxHistoryX = -Infinity;
 // --- Controls Setup ---
 // ENHANCED: Add `unit` and `precision` for better display formatting in ControlsManager.
 const controlsConfig = [
-    { type: 'slider', key: 'gravity', label: '重力:', min: 0.05, max: 0.5, step: 0.01, initialValue: gravity, unit: ' m/s²', precision: 2 },
+    { type: 'slider', key: 'gravity', label: '重力加速度:', min: 0.05, max: 0.5, step: 0.01, initialValue: gravity, unit: ' m/s²', precision: 2 },
     { type: 'slider', key: 'initialSpeed', label: '初始速度:', min: 5, max: 25, step: 1, initialValue: initialSpeed, unit: ' m/s', precision: 0 }
 ];
 
