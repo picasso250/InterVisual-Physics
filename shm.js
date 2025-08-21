@@ -140,70 +140,32 @@ function drawDashedLine(ctx, x1, y1, x2, y2, dash = [], color = '#aaa', width = 
 // --- 新增：绘制图表函数 ---
 function drawGraphs() {
     // 重新计算图表原点位置以适应画布大小变化
-    graphOriginX = canvas.width / 2;
-    graphOriginY = floorY + 100; // 位于地面线下方100像素处
-    timeAxisY = graphOriginY + graphHeight / 2 + 50; // 位于竖直轴下方50像素处
+    // graphOriginX = canvas.width / 2; // 不再用于瞬时值轴，但可能仍作为时间轴定位参考
+    // graphOriginY = floorY + 100; // 不再用于瞬时值轴
 
-    // --- 瞬时值竖直坐标轴 (x, v, a, F) ---
-    const axisStartX = graphOriginX;
-    const axisStartY = graphOriginY - graphHeight / 2;
-    const axisEndY = graphOriginY + graphHeight / 2;
+    // 重新调整 timeAxisY 的计算，因为 graphOriginY 的语义可能不再一样
+    // 我们将时间轴直接定位在画布底部上方的一定距离
+    const timeGraphCenterY = canvas.height - 150; // 例如，距离底部150像素
+    const timeGraphOriginX = canvas.width / 2 - graphWidth / 2; // 时间图表左边缘
+    const timeGraphEndX = canvas.width / 2 + graphWidth / 2;    // 时间图表右边缘
 
-    // 绘制竖直坐标轴线
-    drawDashedLine(ctx, axisStartX, axisStartY, axisStartX, axisEndY, [], '#888', 1);
 
-    // 绘制竖直坐标轴标题和零点标签
-    ctx.font = '14px Arial';
-    ctx.fillStyle = '#333';
-    ctx.textAlign = 'center';
-    ctx.fillText('瞬时值', axisStartX, axisStartY - 20); // 标题
-    ctx.fillText('0', axisStartX - 10, graphOriginY + 5); // 零点标签
+    // REMOVED: --- 瞬时值竖直坐标轴 (x, v, a, F) ---
+    // 所有的轴线、标题、零点标签、以及其上绘制的瞬时值点都将被移除。
+    // 因为现在这些瞬时值点将直接绘制在时间序列图表的“当前时间”虚线上。
 
     // 获取当前物理量的值（位移、速度、加速度、力）
+    // 这些值仍然需要计算，因为它们会用于更新数据面板和在时间序列图表上绘制“当前时间”点
     const currentDisplacement = positionX - equilibriumX;
     const currentVelocity = velocityX;
     const currentAcceleration = accelerationX;
     const currentForce = -springConstant * currentDisplacement;
 
-    // 在竖直坐标轴上绘制代表这些值的点
-    const pointRadius = 4;
-
-    // 位移 (蓝色)
-    const dispY = graphOriginY - currentDisplacement * displacementGraphScale;
-    ctx.fillStyle = '#007bff'; // 蓝色
-    ctx.beginPath();
-    ctx.arc(axisStartX, dispY, pointRadius, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillText('x', axisStartX - 20, dispY + 5); // 标签 x
-
-    // 速度 (绿色)
-    const velY = graphOriginY - currentVelocity * velocityGraphScale;
-    ctx.fillStyle = '#28a745'; // 绿色
-    ctx.beginPath();
-    ctx.arc(axisStartX, velY, pointRadius, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillText('v', axisStartX + 20, velY + 5); // 标签 v
-
-    // 加速度 (黄色)
-    const accY = graphOriginY - currentAcceleration * accelerationGraphScale;
-    ctx.fillStyle = '#ffc107'; // 黄色
-    ctx.beginPath();
-    ctx.arc(axisStartX, accY, pointRadius, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillText('a', axisStartX - 20, accY + 5); // 标签 a
-
-    // 力 (红色)
-    const forceY = graphOriginY - currentForce * forceGraphScale;
-    ctx.fillStyle = '#dc3545'; // 红色
-    ctx.beginPath();
-    ctx.arc(axisStartX, forceY, pointRadius, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillText('F', axisStartX + 20, forceY + 5); // 标签 F
 
     // --- 水平时间序列图表 (x, v, a, F vs. Time) ---
-    const timeGraphOriginX = graphOriginX - graphWidth / 2; // 时间图表左边缘
-    const timeGraphEndX = graphOriginX + graphWidth / 2;    // 时间图表右边缘
-    const timeGraphCenterY = timeAxisY; // 时间轴线Y位置
+    // const timeGraphOriginX = graphOriginX - graphWidth / 2; // 时间图表左边缘
+    // const timeGraphEndX = graphOriginX + graphWidth / 2;    // 时间图表右边缘
+    // const timeGraphCenterY = timeAxisY; // 时间轴线Y位置
 
     // 绘制水平时间轴线
     drawDashedLine(ctx, timeGraphOriginX, timeGraphCenterY, timeGraphEndX, timeGraphCenterY, [], '#888', 1);
@@ -216,7 +178,6 @@ function drawGraphs() {
     ctx.fillStyle = '#333';
     ctx.textAlign = 'center';
     ctx.fillText('时间 (s)', timeGraphEndX + 40, timeGraphCenterY); // 时间轴标题
-    // 修正：更改标签为“当前时间”，并将其放置在虚线下方
     ctx.fillText('当前时间', timeGraphEndX, timeGraphCenterY + 20); // '当前时间' 标签
 
     // 绘制曲线标签
@@ -270,8 +231,49 @@ function drawGraphs() {
         drawCurve(accelerationHistory, accelerationGraphScale, '#ffc107'); // 加速度
         drawCurve(forceHistory, forceGraphScale, '#dc3545');         // 力
     }
-}
 
+    // 在时间序列图的“当前时间”线上绘制当前物理量点
+    // 这里的点将直接显示当前瞬时值，替代了之前的独立瞬时值轴
+    if (timeHistory.length > 0) {
+        const currentPointX = timeGraphEndX; // "当前时间"虚线的X坐标
+
+        // 从历史数据数组的末尾获取当前值，这些值与瞬时值图表中使用的值是同一时刻的
+        const latestDisplacement = displacementHistory[displacementHistory.length - 1];
+        const latestVelocity = velocityHistory[velocityHistory.length - 1];
+        const latestAcceleration = accelerationHistory[accelerationHistory.length - 1];
+        const latestForce = forceHistory[forceHistory.length - 1];
+
+        const pointRadius = 4; // 点的半径
+
+        // 位移 (蓝色)
+        const latestDispY = timeGraphCenterY - latestDisplacement * displacementGraphScale;
+        ctx.fillStyle = '#007bff'; 
+        ctx.beginPath();
+        ctx.arc(currentPointX, latestDispY, pointRadius, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 速度 (绿色)
+        const latestVelY = timeGraphCenterY - latestVelocity * velocityGraphScale;
+        ctx.fillStyle = '#28a745'; 
+        ctx.beginPath();
+        ctx.arc(currentPointX, latestVelY, pointRadius, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 加速度 (黄色)
+        const latestAccY = timeGraphCenterY - latestAcceleration * accelerationGraphScale;
+        ctx.fillStyle = '#ffc107'; 
+        ctx.beginPath();
+        ctx.arc(currentPointX, latestAccY, pointRadius, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 力 (红色)
+        const latestForceY = timeGraphCenterY - latestForce * forceGraphScale;
+        ctx.fillStyle = '#dc3545'; 
+        ctx.beginPath();
+        ctx.arc(currentPointX, latestForceY, pointRadius, 0, Math.PI * 2);
+        ctx.fill();
+    }
+}
 
 // --- 画布大小调整 ---
 function resizeCanvas() {
