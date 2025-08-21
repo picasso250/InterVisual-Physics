@@ -1,3 +1,4 @@
+// File: `projectile_motion.js`
 import { drawArrow } from './drawing_utils.js'; // Adjust path if needed
 
 const canvas = document.getElementById('gravityCanvas');
@@ -105,8 +106,7 @@ function resetBall() {
     minHistoryX = Infinity;
     maxHistoryX = -Infinity;
 
-    // Reset dataDisplay position if it was moved to top-right
-    dataDisplayDiv.classList.remove('top-right');
+    // Remove `dataDisplayDiv.classList.remove('top-right');` and `dataDisplayDiv.classList.remove('hidden');`
 
     ball.x = ball.radius + 30;
     ball.y = canvas.height - ball.radius - horizonOffset;
@@ -340,7 +340,7 @@ function update() {
 
         infoDiv.textContent = "时间回溯模式：左右移动鼠标查看速度分解。点击任意位置重新开始。";
         controlsDiv.classList.add('hidden'); // 隐藏控制面板
-        dataDisplayDiv.classList.add('top-right'); // 将数据面板移动到右上角
+        // dataDisplayDiv.classList.add('top-right'); // REMOVED: dataDisplay is always top-right now
         // explanationDiv.classList.add('hidden'); // Optional: hide explanation panel
         
         // Initially draw the stopped ball on the ground, then mousemove will take over
@@ -367,7 +367,7 @@ function update() {
         time = 0; // Reset time if it flies off
 
         // Ensure dataDisplay is back to default position if ball flies off
-        dataDisplayDiv.classList.remove('top-right');
+        // dataDisplayDiv.classList.remove('top-right'); // REMOVED: dataDisplay is always top-right now
         // 重置历史X轴范围
         minHistoryX = Infinity;
         maxHistoryX = -Infinity;

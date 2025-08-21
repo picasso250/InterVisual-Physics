@@ -1,3 +1,4 @@
+/* File: `projectile_motion.css` */
 /* 确保页面和Canvas全屏显示 */
 html, body {
     margin: 0;
@@ -133,28 +134,21 @@ canvas {
 /* 新增：实时数据展示面板 */
 #dataDisplay {
     position: absolute;
-    bottom: 20px; /* 定位在左下角 */
-    left: 20px;
+    top: 20px; /* 定位在右上角 */
+    right: 20px; /* 定位在右上角 */
     background-color: rgba(255, 255, 255, 0.85);
     padding: 15px;
     border-radius: 8px;
     color: #333;
     font-size: 0.9em;
     max-width: 250px;
-    /* line-height: 1.5; */ /* Removed as table cells manage their own height better */
     user-select: none;
     z-index: 10;
-    transition: all 0.3s ease-in-out; /* Added transition for smooth movement */
-    visibility: hidden;
 }
 
-/* New style for dataDisplay when in time reversal mode */
-#dataDisplay.top-right {
-    top: 20px;
-    bottom: auto; /* Override bottom positioning */
-    left: auto; /* Override left positioning */
-    right: 20px; /* Move to the right */
-    visibility: visible;
+#dataDisplay.hidden {
+    opacity: 0;
+    pointer-events: none; /* Prevent interaction when hidden */
 }
 
 /* --- Start: Modified #dataDisplay internal styling for table --- */
