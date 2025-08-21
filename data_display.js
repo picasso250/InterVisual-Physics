@@ -69,8 +69,10 @@ class DataDisplay {
     /**
      * Updates the displayed values in the panel based on the provided data.
      * The method expects 'data' object keys to match 'key' in displayFieldsConfig.
+     * IMPORTANT: The 'data' object passed to this method should already contain
+     *            formatted string values, including units and desired precision.
      * @param {object} data - An object containing the data to display.
-     *   Example: { time: 10.5, vx: 2.3, ... }
+     *   Example: { time: "10.5 s", vx: "2.30 m/s", ... }
      */
     update(data) {
         // Only update if elements are initialized. Visibility is managed by the main script.
@@ -83,31 +85,9 @@ class DataDisplay {
         this.displayFieldsConfig.forEach(field => {
             const element = this.elements[field.key];
             if (element) {
-                let value = data[field.key];
-                let formattedValue;
-
-                // Apply specific formatting based on the key
-                switch (field.key) {
-                    case 'time':
-                        formattedValue = value.toFixed(1) + ' s';
-                        break;
-                    case 'vx':
-                    case 'vy':
-                    case 'v':
-                        formattedValue = value.toFixed(2) + ' m/s';
-                        break;
-                    case 'height':
-                    case 'distance':
-                        // Ensure height/distance are not negative for display
-                        formattedValue = Math.max(0, value).toFixed(2) + ' m';
-                        break;
-                    case 'gravity':
-                        formattedValue = value.toFixed(2) + ' m/s²';
-                        break;
-                    default:
-                        formattedValue = value !== undefined ? String(value) : '';
-                }
-                element.textContent = formattedValue;
+                // The value received from 'data' is now expected to be a pre-formatted string.
+                const valueToDisplay = data[field.key];
+                element.textContent = valueToDisplay !== undefined ? String(valueToDisplay) : '';
             }
         });
     }

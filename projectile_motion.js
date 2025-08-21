@@ -17,13 +17,13 @@ const initialSpeedValueSpan = document.getElementById('initialSpeedValue');
 
 // 定义数据展示面板的字段配置
 const displayFieldsConfig = [
-    { key: 'time', label: '时间 (t):', className: 'color-g', initialValue: '0.0' },
-    { key: 'vx', label: '水平速度 (Vx):', className: 'color-vx', initialValue: '0.00' },
-    { key: 'vy', label: '垂直速度 (Vy):', className: 'color-vy', initialValue: '0.00' },
-    { key: 'v', label: '合速度 (V):', className: 'color-v', initialValue: '0.00' },
-    { key: 'height', label: '高度 (H):', initialValue: '0.00' },
-    { key: 'distance', label: '水平距离 (X):', initialValue: '0.00' },
-    { key: 'gravity', label: '重力 (G):', className: 'color-g', initialValue: '0.00' }
+    { key: 'time', label: '时间 (t):', className: 'color-g', initialValue: '0.0 s' }, // Initial values now include units
+    { key: 'vx', label: '水平速度 (Vx):', className: 'color-vx', initialValue: '0.00 m/s' },
+    { key: 'vy', label: '垂直速度 (Vy):', className: 'color-vy', initialValue: '0.00 m/s' },
+    { key: 'v', label: '合速度 (V):', className: 'color-v', initialValue: '0.00 m/s' },
+    { key: 'height', label: '高度 (H):', initialValue: '0.00 m' },
+    { key: 'distance', label: '水平距离 (X):', initialValue: '0.00 m' },
+    { key: 'gravity', label: '重力 (G):', className: 'color-g', initialValue: '0.00 m/s²' }
 ];
 
 // 实例化数据展示面板组件，传入容器元素和配置
@@ -129,22 +129,25 @@ function updateDataDisplay() {
     // 更新滑块旁的值
     gravityValueSpan.textContent = gravity.toFixed(2); 
 
-    // 计算高度（小球底部到地平线的距离）
-    const currentHeight = (canvas.height - horizonOffset) - (ball.y + ball.radius);
-    // 计算水平距离（相对于起始点）
+    // 计算原始物理值
+    const currentHeightRaw = (canvas.height - horizonOffset) - (ball.y + ball.radius);
     const initialBallX = ball.radius + 30;
-    const currentDistance = ball.x - initialBallX;
+    const currentDistanceRaw = ball.x - initialBallX;
+    const combinedSpeedRaw = Math.sqrt(vx * vx + vy * vy);
+
+    // 格式化数据并添加单位，准备传递给DataDisplay
+    const dataToDisplay = {
+        time: time.toFixed(1) + ' s',
+        vx: vx.toFixed(2) + ' m/s',
+        vy: vy.toFixed(2) + ' m/s',
+        v: combinedSpeedRaw.toFixed(2) + ' m/s',
+        height: Math.max(0, currentHeightRaw).toFixed(2) + ' m', // Ensure height is not negative for display
+        distance: Math.max(0, currentDistanceRaw).toFixed(2) + ' m', // Ensure distance is not negative for display
+        gravity: gravity.toFixed(2) + ' m/s²'
+    };
 
     // 调用 DataDisplay 组件的 update 方法，传入所有需要的数据
-    dataDisplay.update({
-        time: time,
-        vx: vx,
-        vy: vy,
-        v: Math.sqrt(vx * vx + vy * vy),
-        height: currentHeight,
-        distance: currentDistance,
-        gravity: gravity
-    });
+    dataDisplay.update(dataToDisplay);
 }
 
 

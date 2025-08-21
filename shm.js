@@ -2,6 +2,7 @@
 
 // 导入通用的绘图工具函数
 import { drawArrow } from './drawing_utils.js'; // 确保路径正确
+import DataDisplay from './data_display.js'; // NEW: Import DataDisplay class
 
 const canvas = document.getElementById('shmCanvas');
 const ctx = canvas.getContext('2d');
@@ -14,14 +15,31 @@ const springConstantSlider = document.getElementById('springConstantSlider');
 const springConstantValueSpan = document.getElementById('springConstantValue');
 const resetButton = document.getElementById('resetButton');
 
-// 获取实时数据面板元素
-const timeSpan = document.getElementById('timeValue');
-const positionSpan = document.getElementById('positionValue');
-const velocitySpan = document.getElementById('velocityValue');
-const accelerationSpan = document.getElementById('accelerationValue');
-const kineticEnergySpan = document.getElementById('kineticEnergyValue');
-const potentialEnergySpan = document.getElementById('potentialEnergyValue');
-const totalEnergySpan = document.getElementById('totalEnergyValue');
+// REMOVED: Individual span elements for data display as DataDisplay class manages them
+// const timeSpan = document.getElementById('timeValue');
+// const positionSpan = document.getElementById('positionValue');
+// const velocitySpan = document.getElementById('velocityValue');
+// const accelerationSpan = document.getElementById('accelerationValue');
+// const kineticEnergySpan = document.getElementById('kineticEnergyValue');
+// const potentialEnergySpan = document.getElementById('potentialEnergyValue');
+// const totalEnergySpan = document.getElementById('totalEnergyValue');
+
+// NEW: Initialize DataDisplay instance
+const dataDisplayContainer = document.getElementById('dataDisplay');
+// Define the configuration for the data fields to be displayed
+const dataDisplayConfig = [
+    { key: 'time', label: '时间 (t):', className: 'color-value', initialValue: '0.00 s' },
+    // Using 'displacement' as the key, DataDisplay's default formatter will apply (toFixed(2))
+    { key: 'displacement', label: '位置 (X):', className: 'color-value', initialValue: '0.00 m' },
+    // Using 'velocity' as the key, DataDisplay's 'v' formatter will apply if matched
+    { key: 'velocity', label: '速度 (V):', className: 'color-value', initialValue: '0.00 m/s' },
+    { key: 'acceleration', label: '加速度 (A):', className: 'color-value', initialValue: '0.00 m/s²' },
+    { key: 'kineticEnergy', label: '动能 (KE):', className: 'color-value', initialValue: '0.00 J' },
+    { key: 'potentialEnergy', label: '势能 (PE):', className: 'color-value', initialValue: '0.00 J' },
+    { key: 'totalEnergy', label: '总能量 (TE):', className: 'color-value', initialValue: '0.00 J' }
+];
+const dataDisplay = new DataDisplay(dataDisplayContainer, dataDisplayConfig);
+
 
 // --- 物理变量 ---
 let mass = 5; // kg
@@ -360,13 +378,17 @@ function updateDataDisplay() {
     const potentialEnergy = 0.5 * springConstant * displacement * displacement;
     const totalEnergy = kineticEnergy + potentialEnergy;
 
-    timeSpan.textContent = time.toFixed(2);
-    positionSpan.textContent = displacement.toFixed(2); // 显示相对于平衡位置的位移
-    velocitySpan.textContent = velocityX.toFixed(2);
-    accelerationSpan.textContent = accelerationX.toFixed(2);
-    kineticEnergySpan.textContent = kineticEnergy.toFixed(2);
-    potentialEnergySpan.textContent = potentialEnergy.toFixed(2);
-    totalEnergySpan.textContent = totalEnergy.toFixed(2);
+    // NEW: Call the update method of the DataDisplay instance
+    // DataDisplay expects formatted string values, including units and desired precision.
+    dataDisplay.update({
+        time: time.toFixed(2) + ' s', // Format time with seconds unit
+        displacement: displacement.toFixed(2) + ' m', // Format displacement with meters unit
+        velocity: velocityX.toFixed(2) + ' m/s', // Format velocity with meters per second unit
+        acceleration: accelerationX.toFixed(2) + ' m/s²', // Format acceleration with meters per second squared unit
+        kineticEnergy: kineticEnergy.toFixed(2) + ' J', // Format kinetic energy with Joules unit
+        potentialEnergy: potentialEnergy.toFixed(2) + ' J', // Format potential energy with Joules unit
+        totalEnergy: totalEnergy.toFixed(2) + ' J' // Format total energy with Joules unit
+    });
 }
 
 // --- 绘图函数 ---
