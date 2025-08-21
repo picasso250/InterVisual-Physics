@@ -1,252 +1,206 @@
-/* my_physics_simulations/shm/shm.css */
+/* ===================================================
+   Common Design System (Adapted from Calm UI)
+   =================================================== */
+:root {
+  /* Base Palette */
+  --bg: #f6f7f9;
+  --panel: #ffffff;
+  --text: #0f172a;     /* slate-900 */
+  --muted: #5b6878;    /* calm grey */
+  --border: #e5e7eb;   /* subtle border */
+  --ring: #c7d2fe;     /* focus ring */
+  --accent: #2563eb;   /* blue-600 */
+  --accent-weak: #eff6ff; /* blue-50 */
+  --shadow: 0 1px 2px rgba(15, 23, 42, 0.06), 0 6px 20px rgba(15, 23, 42, 0.04);
 
-/* 确保页面和Canvas全屏显示 */
+  /* SHM Vector Colors */
+  --color-x: #2563eb; /* blue-600 (Displacement) */
+  --color-v: #16a34a; /* green-600 (Velocity) */
+  --color-a: #f59e0b; /* amber-500 (Acceleration) */
+  --color-f: #dc2626; /* red-600 (Force) */
+  --color-time: #475569; /* slate-600 */
+
+  /* Layout & Fonts */
+  --radius: 14px;
+  --space-2: 12px;
+  --space-4: 20px;
+  --space-5: 24px;
+  --font-sys: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Noto Sans, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0b1220;
+    --panel: #0f172a;
+    --text: #e5e7eb;
+    --muted: #94a3b8;
+    --border: #1f2937;
+    --ring: #1d4ed8;
+    --accent: #60a5fa;
+    --accent-weak: #0b254a;
+    --shadow: 0 1px 2px rgba(0,0,0,0.35), 0 8px 24px rgba(0,0,0,0.35);
+
+    /* Dark Mode SHM Vector Colors */
+    --color-x: #60a5fa; /* blue-400 */
+    --color-v: #4ade80; /* green-400 */
+    --color-a: #fcd34d; /* amber-300 */
+    --color-f: #f87171; /* red-400 */
+    --color-time: #cbd5e1;  /* slate-300 */
+  }
+}
+
+* { box-sizing: border-box; }
+
 html, body {
-    margin: 0;
-    padding: 0;
-    overflow: hidden; /* 防止滚动条出现 */
-    background-color: #f8f8f8; /* 几乎白色背景 */
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* 更现代的字体 */
-    color: #333; /* 深色文本，适配浅色背景 */
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  font-family: var(--font-sys);
+  color: var(--text);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 canvas {
-    display: block; /* 移除Canvas底部可能出现的额外空白 */
-    background-color: #ffffff; /* 纯白色作为Canvas背景 */
+  display: block;
 }
 
+/* ===========================
+   Simulation UI Elements
+   =========================== */
+
+/* Top Info Banner */
 #info {
-    position: absolute;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    text-align: center;
-    font-size: 1.2em;
-    color: #555;
-    user-select: none;
-    z-index: 10;
-    padding: 8px 15px;
-    background-color: rgba(255, 255, 255, 0.85);
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  position: absolute;
+  top: var(--space-4);
+  left: 50%;
+  transform: translateX(-50%);
+  width: auto;
+  padding: var(--space-2) var(--space-4);
+  font-size: 15px;
+  color: var(--muted);
+  user-select: none;
+  z-index: 10;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  box-shadow: var(--shadow);
+  white-space: nowrap;
 }
 
-#controls {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    background-color: rgba(255, 255, 255, 0.85);
-    padding: 15px;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    z-index: 10;
-    color: #333;
-    font-size: 0.95em;
-    user-select: none;
+/* Shared UI Panel Style */
+.ui-panel {
+  position: absolute;
+  background: var(--panel);
+  padding: var(--space-4);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  z-index: 10;
+  user-select: none;
+  transition: opacity 0.3s ease-in-out;
+  font-size: 14px;
+}
+.ui-panel.hidden {
+  opacity: 0;
+  pointer-events: none;
 }
 
-#controls h3 {
-    margin-top: 0;
-    margin-bottom: 15px;
-    color: #007bff;
-    text-align: center;
-}
+/* Specific Panel Positioning */
+#controls { top: var(--space-4); right: var(--space-4); width: 280px; }
+#dataDisplay { bottom: var(--space-4); left: var(--space-4); width: 240px; }
+#formulaExplanation { bottom: var(--space-4); right: var(--space-4); max-width: 380px; font-size: 13px; }
 
+/* Control Panel Content */
 #controls div {
-    margin-bottom: 10px;
-    display: flex;
-    align-items: center;
+  margin-bottom: var(--space-2);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
 }
+#controls h3 { margin: 0 0 10px; font-size: 16px; letter-spacing: -0.01em; text-align: left; color: var(--text); }
+#controls label { width: 90px; font-weight: 600; color: var(--muted); }
+#controls span { width: 60px; text-align: right; font-weight: 600; font-family: monospace, var(--font-sys); font-size: 15px;}
 
-#controls label {
-    width: 100px; /* 标签固定宽度 */
-    margin-right: 10px;
-    font-weight: bold;
-}
-
+/* Styled Sliders */
 #controls input[type="range"] {
-    flex-grow: 1;
-    margin-right: 10px;
-    -webkit-appearance: none;
-    appearance: none;
-    height: 8px;
-    background: #d3d3d3;
-    outline: none;
-    opacity: 0.7;
-    -webkit-transition: .2s;
-    transition: opacity .2s;
-    border-radius: 4px;
+  flex-grow: 1;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  background: var(--border);
+  outline: none;
+  border-radius: 3px;
+  transition: background .2s ease;
 }
-
+#controls input[type="range"]:hover { background: color-mix(in srgb, var(--text) 10%, var(--border)); }
 #controls input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 18px;
-    height: 18px;
-    background: #007bff; /* 蓝色滑块 */
-    border-radius: 50%;
-    cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  background: var(--accent);
+  border-radius: 50%;
+  border: 2px solid var(--panel);
+  cursor: pointer;
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.1);
 }
-
 #controls input[type="range"]::-moz-range-thumb {
-    width: 18px;
-    height: 18px;
-    background: #007bff;
-    border-radius: 50%;
-    cursor: pointer;
+  width: 18px;
+  height: 18px;
+  background: var(--accent);
+  border-radius: 50%;
+  border: 2px solid var(--panel);
+  cursor: pointer;
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.1);
+}
+#controls input[type="range"]:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px var(--ring);
+  border-radius: 4px; /* for the focus shadow */
 }
 
-#controls span {
-    width: 50px; /* 数值显示宽度 */
-    text-align: right;
-    font-weight: bold;
-    color: #007bff; /* 数值颜色 */
-}
-
+/* Reset Button Style */
 #controls button {
-    display: block;
-    width: 100%;
-    padding: 10px 15px;
-    margin-top: 20px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    font-size: 1em;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
+  display: block;
+  width: 100%;
+  padding: 10px 0;
+  margin-top: var(--space-2);
+  background-color: var(--accent);
+  color: var(--panel); /* Use panel color for text for contrast */
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
 }
-
 #controls button:hover {
-    background-color: #0056b3;
+  background-color: color-mix(in srgb, var(--accent) 90%, var(--text));
 }
-
-/* 实时数据展示面板 */
-#dataDisplay {
-    position: absolute;
-    bottom: 20px;
-    left: 20px;
-    background-color: rgba(255, 255, 255, 0.85);
-    padding: 15px;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    color: #333;
-    font-size: 0.9em;
-    max-width: 280px;
-    user-select: none;
-    z-index: 10;
-}
-
-/* Updated/Removed comments for dataDisplay internal elements */
-/* REMOVED: #dataDisplay table, td, span rules are now largely handled by data_display.css or custom classes */
-/* The general .color-value rule is now commented out as specific color classes are used. */
-/*
-.color-value {
-    color: #007bff; // This was the old default, now replaced by specific colors
-}
-*/
-
-/* NEW: General styles for data display labels and values within the dynamically generated structure */
-/* Assuming data_display.js creates a structure like:
-   <div id="dataDisplay">
-       <div>
-           <span class="data-field-label">Label:</span>
-           <span class="data-field-value color-time">Value</span>
-       </div>
-       ...
-   </div>
-*/
-#dataDisplay > div {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 4px 0;
-}
-
-.data-field-label {
-    text-align: right;
-    padding-right: 10px;
-    font-weight: bold;
-    white-space: nowrap;
-}
-
-.data-field-value {
-    text-align: right;
-    white-space: nowrap;
-    font-weight: bold; /* Keep bold for values */
-    padding-left: 10px;
-    min-width: 80px; /* Ensure enough space for values */
+#controls button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px var(--ring);
 }
 
 
-/* NEW: Specific color classes for data display values, matching arrow colors */
-.color-time {
-    color: #555; /* Neutral gray for time, as requested */
-}
+/* Panel Text & Colors (for formula panel) */
+.ui-panel p { margin: 0 0 8px; line-height: 1.6; }
+.ui-panel p:last-child { margin-bottom: 0; }
+.ui-panel h3 { margin: 0 0 10px; font-size: 16px; letter-spacing: -0.01em; }
+.color-x { color: var(--color-x); font-weight: 600; }
+.color-v { color: var(--color-v); font-weight: 600; }
+.color-a { color: var(--color-a); font-weight: 600; }
+.color-f { color: var(--color-f); font-weight: 600; }
+.color-time { color: var(--color-time); font-weight: 600; }
 
-.color-displacement {
-    color: #007bff; /* Blue for displacement (x) */
-}
+/* The DataDisplay component will use the above classes directly.
+   No further specific styling for #dataDisplay is needed here,
+   as data_display.css handles the table layout. */
 
-.color-velocity {
-    color: #28a745; /* Green for velocity (v) */
-}
-
-.color-acceleration {
-    color: #ffc107; /* Yellow for acceleration (a) */
-}
-
-.color-force-display { /* Red for force (F), used for data display to avoid clash with formula .color-force */
-    color: #dc3545;
-}
-
-
-/* 隐藏辅助类 (从 common.css 复制过来并确保在 shm.css 中也生效) */
-.hidden {
-    opacity: 0;
-    pointer-events: none; /* Prevent interaction when hidden */
-}
-
-/* 新增：运动学公式面板 */
-#formulaExplanation {
-    position: absolute;
-    bottom: 20px; /* 定位在右下角 */
-    right: 20px;
-    background-color: rgba(255, 255, 255, 0.85);
-    padding: 15px;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Consistent with other panels in shm.css */
-    color: #333;
-    font-size: 0.85em; /* 稍微小一点，避免占据太多空间 */
-    max-width: 380px; /* 允许更宽，以便公式展示 */
-    line-height: 1.6; /* 增加行高，提升可读性 */
-    user-select: none;
-    z-index: 10;
-    /* transition: opacity 0.3s ease-in-out; */ /* Not strictly needed for static display, but can be added if hide/show is implemented */
-}
-
-#formulaExplanation h3 {
-    margin-top: 0;
-    margin-bottom: 10px;
-    text-align: center;
-    color: #555;
-}
-
-#formulaExplanation p {
-    margin: 3px 0;
-}
-
-/* 公式中的下标和上标样式 (主要用于非MathML文本，但提供一致性) */
-#formulaExplanation sup, #formulaExplanation sub {
-    font-size: 0.7em; /* 更小的下标和上标 */
-    vertical-align: super;
-}
-#formulaExplanation sub {
-    vertical-align: sub;
-}
-
-/* 新增：力 (Force) 的颜色，与Canvas上力箭头的颜色保持一致 */
-.color-force {
-    color: #dc3545; /* Bootstrap 'danger' red, often used for force vectors */
-    font-weight: bold;
+/* Styles for formula panel MathML elements, ensuring they match text color */
+#formulaExplanation math {
+  color: var(--text);
 }
