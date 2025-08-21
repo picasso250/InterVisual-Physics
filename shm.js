@@ -71,23 +71,16 @@ const arrowLabelMagnitudeXOffset = 10; // 箭头标签X方向偏移的绝对值
 const ARROW_DRAW_THRESHOLD = 0.001; // 如果力的绝对值小于此阈值，则不绘制箭头
 
 // --- 新增：图表常量和变量 ---
-// 瞬时值竖直坐标轴
-const graphHeight = 200; // 竖直坐标轴的高度
-let graphOriginX; // 竖直坐标轴的X位置 (画布水平居中)
-let graphOriginY; // 竖直坐标轴零点的Y位置
+const graphHeight = 200; // 竖直坐标轴的高度，现在作为图表数据可视范围的高度
+// 移除了 graphOriginX, graphOriginY, graphWidth, timeAxisY，这些将根据画布动态计算
 
 // 竖直坐标轴上各个物理量的刻度 (像素/单位)
 // 这些值根据模拟的典型范围进行调整，使其能较好地显示在图表中
-// 这里假设主要模拟单位是像素，并根据经验值设定
-const displacementGraphScale = 1;   // 1 像素/模拟位移单位 (如果位移单位是像素，那就是1像素图表长度/1像素位移)
+const displacementGraphScale = 1;   // 1 像素/模拟位移单位
 const velocityGraphScale = 1.5;    // 1.5 像素/(模拟速度单位)
 const accelerationGraphScale = 2.5; // 2.5 像素/(模拟加速度单位)
 const forceGraphScale = 0.5;   // 0.5 像素/(模拟力单位)
-
-// 时间序列水平坐标轴
-const graphWidth = 400; // 时间序列图表的宽度
-let timeAxisY; // 时间轴的Y位置
-const timeScale = 50; // 时间轴刻度 (像素/秒)
+const timeScale = 50; // 时间轴刻度 (像素/秒) - 保持不变，用于确定时间跨度与像素的对应关系
 
 // 历史数据存储数组
 let displacementHistory = [];
@@ -139,20 +132,16 @@ function drawDashedLine(ctx, x1, y1, x2, y2, dash = [], color = '#aaa', width = 
 
 // --- 新增：绘制图表函数 ---
 function drawGraphs() {
-    // 重新计算图表原点位置以适应画布大小变化
-    // graphOriginX = canvas.width / 2; // 不再用于瞬时值轴，但可能仍作为时间轴定位参考
-    // graphOriginY = floorY + 100; // 不再用于瞬时值轴
+    // 根据画布大小和需求定义图表区域的X, Y坐标
+    const timeGraphOriginX = wallWidth; // 图表左边缘与墙壁对齐
+    const timeGraphEndX = canvas.width * (2 / 3); // 图表右边缘在画布宽度的2/3处 (当前时间线)
+    const timeGraphCenterY = canvas.height / 2; // 时间轴的Y坐标在画布的垂直中心
 
-    // 重新调整 timeAxisY 的计算，因为 graphOriginY 的语义可能不再一样
-    // 我们将时间轴直接定位在画布底部上方的一定距离
-    const timeGraphCenterY = canvas.height - 150; // 例如，距离底部150像素
-    const timeGraphOriginX = canvas.width / 2 - graphWidth / 2; // 时间图表左边缘
-    const timeGraphEndX = canvas.width / 2 + graphWidth / 2;    // 时间图表右边缘
+    // 计算图表实际的绘制宽度
+    const currentGraphPlotWidth = timeGraphEndX - timeGraphOriginX;
 
-
-    // REMOVED: --- 瞬时值竖直坐标轴 (x, v, a, F) ---
-    // 所有的轴线、标题、零点标签、以及其上绘制的瞬时值点都将被移除。
-    // 因为现在这些瞬时值点将直接绘制在时间序列图表的“当前时间”虚线上。
+    // 如果图表宽度无效，则不绘制
+    if (currentGraphPlotWidth <= 0) return;
 
     // 获取当前物理量的值（位移、速度、加速度、力）
     // 这些值仍然需要计算，因为它们会用于更新数据面板和在时间序列图表上绘制“当前时间”点
@@ -163,14 +152,11 @@ function drawGraphs() {
 
 
     // --- 水平时间序列图表 (x, v, a, F vs. Time) ---
-    // const timeGraphOriginX = graphOriginX - graphWidth / 2; // 时间图表左边缘
-    // const timeGraphEndX = graphOriginX + graphWidth / 2;    // 时间图表右边缘
-    // const timeGraphCenterY = timeAxisY; // 时间轴线Y位置
 
     // 绘制水平时间轴线
     drawDashedLine(ctx, timeGraphOriginX, timeGraphCenterY, timeGraphEndX, timeGraphCenterY, [], '#888', 1);
 
-    // 绘制时间轴的零点垂直线（虚线） <-- 修正：将虚线移动到图表右侧，代表当前时间
+    // 绘制表示“当前时间”的垂直虚线
     drawDashedLine(ctx, timeGraphEndX, timeGraphCenterY - graphHeight / 2, timeGraphEndX, timeGraphCenterY + graphHeight / 2, [5, 5], '#aaa', 1);
 
     // 绘制时间轴标签
@@ -180,25 +166,27 @@ function drawGraphs() {
     ctx.fillText('时间 (s)', timeGraphEndX + 40, timeGraphCenterY); // 时间轴标题
     ctx.fillText('当前时间', timeGraphEndX, timeGraphCenterY + 20); // '当前时间' 标签
 
-    // 绘制曲线标签
+    // 绘制曲线标签 (位于图表右侧，当前时间线旁边)
     ctx.textAlign = 'left';
     ctx.font = '12px Arial';
-    ctx.fillStyle = '#007bff'; ctx.fillText('x', timeGraphEndX + 10, timeGraphCenterY - graphHeight / 2 + 20);
-    ctx.fillStyle = '#28a745'; ctx.fillText('v', timeGraphEndX + 10, timeGraphCenterY - graphHeight / 2 + 40);
-    ctx.fillStyle = '#ffc107'; ctx.fillText('a', timeGraphEndX + 10, timeGraphCenterY - graphHeight / 2 + 60);
-    ctx.fillStyle = '#dc3545'; ctx.fillText('F', timeGraphEndX + 10, timeGraphCenterY - graphHeight / 2 + 80);
+    const labelXOffsetFromEnd = 10;
+    const labelYOffsetStart = timeGraphCenterY - graphHeight / 2; // 图表区域顶部
+    ctx.fillStyle = '#007bff'; ctx.fillText('x', timeGraphEndX + labelXOffsetFromEnd, labelYOffsetStart + 20);
+    ctx.fillStyle = '#28a745'; ctx.fillText('v', timeGraphEndX + labelXOffsetFromEnd, labelYOffsetStart + 40);
+    ctx.fillStyle = '#ffc107'; ctx.fillText('a', timeGraphEndX + labelXOffsetFromEnd, labelYOffsetStart + 60);
+    ctx.fillStyle = '#dc3545'; ctx.fillText('F', timeGraphEndX + labelXOffsetFromEnd, labelYOffsetStart + 80);
 
     // 绘制历史数据曲线
     ctx.lineWidth = 1.5;
 
     // 确定当前图表上可见的时间范围
-    const maxVisibleTimeSpan = graphWidth / timeScale; // 图表上可见的最大时间跨度
-    // const minTimeToShow = time - maxVisibleTimeSpan; // 此变量在此处不再直接用于X坐标计算，但用于startIndex
+    // maxVisibleTimeSpan 代表当前图表区域可以显示的最长时间跨度
+    const maxVisibleTimeSpan = currentGraphPlotWidth / timeScale;
+    const minTimeToShow = time - maxVisibleTimeSpan;
 
     // 找到开始绘制历史数据的索引，避免遍历屏幕外的数据
-    // 应该从 `time - maxVisibleTimeSpan` 之后的数据开始绘制
     let startIndex = 0;
-    while (startIndex < timeHistory.length && timeHistory[startIndex] < time - maxVisibleTimeSpan) {
+    while (startIndex < timeHistory.length && timeHistory[startIndex] < minTimeToShow) {
         startIndex++;
     }
 
@@ -210,10 +198,9 @@ function drawGraphs() {
             ctx.beginPath();
             let firstPointDrawn = false;
             for (let i = startIndex; i < timeHistory.length; i++) {
-                // 修正：将时间转换为图表X坐标
-                // 确保当前时间映射到 timeGraphEndX，历史时间向左延伸
+                // 计算曲线点的X坐标：以 timeGraphEndX 为当前时间点，向左延伸历史数据
                 const x = timeGraphEndX - (time - timeHistory[i]) * timeScale;
-                // 将物理量转换为图表Y坐标
+                // 计算曲线点的Y坐标：以 timeGraphCenterY 为零点，根据数据值和刻度绘制
                 const y = timeGraphCenterY - dataArray[i] * scale;
                 if (!firstPointDrawn) {
                     ctx.moveTo(x, y);
@@ -233,11 +220,10 @@ function drawGraphs() {
     }
 
     // 在时间序列图的“当前时间”线上绘制当前物理量点
-    // 这里的点将直接显示当前瞬时值，替代了之前的独立瞬时值轴
     if (timeHistory.length > 0) {
         const currentPointX = timeGraphEndX; // "当前时间"虚线的X坐标
 
-        // 从历史数据数组的末尾获取当前值，这些值与瞬时值图表中使用的值是同一时刻的
+        // 从历史数据数组的末尾获取当前值
         const latestDisplacement = displacementHistory[displacementHistory.length - 1];
         const latestVelocity = velocityHistory[velocityHistory.length - 1];
         const latestAcceleration = accelerationHistory[accelerationHistory.length - 1];
@@ -245,33 +231,19 @@ function drawGraphs() {
 
         const pointRadius = 4; // 点的半径
 
-        // 位移 (蓝色)
-        const latestDispY = timeGraphCenterY - latestDisplacement * displacementGraphScale;
-        ctx.fillStyle = '#007bff'; 
-        ctx.beginPath();
-        ctx.arc(currentPointX, latestDispY, pointRadius, 0, Math.PI * 2);
-        ctx.fill();
+        // 辅助函数：绘制单个数据点
+        const drawPoint = (value, scale, color) => {
+            const y = timeGraphCenterY - value * scale;
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.arc(currentPointX, y, pointRadius, 0, Math.PI * 2);
+            ctx.fill();
+        };
 
-        // 速度 (绿色)
-        const latestVelY = timeGraphCenterY - latestVelocity * velocityGraphScale;
-        ctx.fillStyle = '#28a745'; 
-        ctx.beginPath();
-        ctx.arc(currentPointX, latestVelY, pointRadius, 0, Math.PI * 2);
-        ctx.fill();
-
-        // 加速度 (黄色)
-        const latestAccY = timeGraphCenterY - latestAcceleration * accelerationGraphScale;
-        ctx.fillStyle = '#ffc107'; 
-        ctx.beginPath();
-        ctx.arc(currentPointX, latestAccY, pointRadius, 0, Math.PI * 2);
-        ctx.fill();
-
-        // 力 (红色)
-        const latestForceY = timeGraphCenterY - latestForce * forceGraphScale;
-        ctx.fillStyle = '#dc3545'; 
-        ctx.beginPath();
-        ctx.arc(currentPointX, latestForceY, pointRadius, 0, Math.PI * 2);
-        ctx.fill();
+        drawPoint(latestDisplacement, displacementGraphScale, '#007bff'); // 位移 (蓝色)
+        drawPoint(latestVelocity, velocityGraphScale, '#28a745');       // 速度 (绿色)
+        drawPoint(latestAcceleration, accelerationGraphScale, '#ffc107'); // 加速度 (黄色)
+        drawPoint(latestForce, forceGraphScale, '#dc3545');         // 力 (红色)
     }
 }
 
@@ -504,7 +476,12 @@ function update() {
     timeHistory.push(time);
 
     // 新增：限制历史数据数组大小，移除屏幕外的数据以优化性能
-    const maxVisibleTimeSpan = graphWidth / timeScale; // 图表上可见的最大时间跨度
+    // 重新计算用于裁剪的历史数据图表范围，使其与绘制的图表范围一致
+    const graphTrimOriginX = wallWidth;
+    const graphTrimEndX = canvas.width * (2 / 3);
+    const effectiveGraphWidthForTrimming = graphTrimEndX - graphTrimOriginX;
+
+    const maxVisibleTimeSpan = effectiveGraphWidthForTrimming / timeScale; // 图表上可见的最大时间跨度
     const minTimeToShow = time - maxVisibleTimeSpan - dt * 2; // 保留一个小的缓冲
 
     while (timeHistory.length > 0 && timeHistory[0] < minTimeToShow) {
