@@ -3,21 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>重力抛物线小球</title>
+    <title>抛体运动模拟 | 物理现象互动实验室</title>
     <link rel="stylesheet" href="projectile_motion.css">
-    <link rel="stylesheet" href="data_display.css"> <!-- 引入数据面板的样式 -->
-    <!-- 如果需要更广泛的兼容性，可以考虑引入 MathJax 或 KaTeX -->
-    <!-- 例如：
-    <script type="text/javascript" async
-      src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML">
-    </script>
-    -->
+    <link rel="stylesheet" href="data_display.css">
 </head>
 <body>
+    <a href="index.html" class="back-link" aria-label="返回主页">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="20" height="20">
+            <path fill-rule="evenodd" d="M12.79 5.23a.75.75 0 010 1.06L9.06 10l3.73 3.71a.75.75 0 11-1.06 1.06l-4.25-4.25a.75.75 0 010-1.06l4.25-4.25a.75.75 0 011.06 0z" clip-rule="evenodd" />
+        </svg>
+        <span>返回</span>
+    </a>
+
     <canvas id="gravityCanvas"></canvas>
     <div id="info">点击开始</div>
 
-    <div id="controls">
+    <div id="controls" class="ui-panel">
         <div>
             <label for="gravitySlider">重力:</label>
             <input type="range" id="gravitySlider" min="0.05" max="0.5" step="0.01">
@@ -31,18 +32,18 @@
     </div>
 
     <!-- 数据展示面板的占位符 -->
-    <div id="dataDisplayContainer"></div>
+    <div id="dataDisplayContainer" class="ui-panel"></div>
 
-    <div id="explanation">
-        <p><span class="color-g">重力 (G):</span> 恒定向下，使垂直速度 <span class="color-vy">Vy</span> 持续增加。</p>
-        <p><span class="color-vx">水平速度 (Vx):</span> 保持不变，因为没有水平方向的力。</p>
-        <p><span class="color-vy">垂直速度 (Vy):</span> 受重力影响而改变。向上时减小，向下时增大。</p>
+    <div id="explanation" class="ui-panel">
+        <p><span class="color-g">重力 (G):</span> 恒定向下，使垂直速度 <span class="color-vy">Vy</span> 持续改变。</p>
+        <p><span class="color-vx">水平速度 (Vx):</span> 保持不变，因无水平外力。</p>
+        <p><span class="color-vy">垂直速度 (Vy):</span> 受重力影响，向上减小，向下增大。</p>
         <p><span class="color-v">合速度 (V):</span> 是 <span class="color-vx">Vx</span> 和 <span class="color-vy">Vy</span> 的矢量和。</p>
     </div>
 
     <!-- 运动学公式面板 -->
-    <div id="formulaExplanation">
-        <h3>运动学公式 (微分形式, 忽略空气阻力)</h3>
+    <div id="formulaExplanation"  class="ui-panel">
+        <h3>运动学公式 (微分形式)</h3>
         <p>微分形式描述了物理量在极短时间段 (<span class="color-g">dt</span>) 内的变化。</p>
         <p><b>水平方向 (<span class="color-vx">x轴</span>):</b></p>
         <p>

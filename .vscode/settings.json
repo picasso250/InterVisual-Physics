@@ -6,5 +6,12 @@
     // 保存时将 Tab 转换为空格
     "editor.convertTabsToSpaces": true,
     // 控制在粘贴时是否自动将 Tab 转换为空格
-    "editor.pasteActions.enabled": true
+    "editor.pasteActions.enabled": true,
+    // CSS文件的Tab配置
+    "[css]": {
+        "editor.tabSize": 2,
+        "editor.insertSpaces": true,
+        "editor.convertTabsToSpaces": true
+    }
 }
+    
