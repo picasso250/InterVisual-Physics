@@ -62,6 +62,33 @@ const arrowLabelMagnitudeXOffset = 10; // 箭头标签X方向偏移的绝对值
 // --- 箭头绘制阈值 ---
 const ARROW_DRAW_THRESHOLD = 0.001; // 如果力的绝对值小于此阈值，则不绘制箭头
 
+// --- 新增：图表常量和变量 ---
+// 瞬时值竖直坐标轴
+const graphHeight = 200; // 竖直坐标轴的高度
+let graphOriginX; // 竖直坐标轴的X位置 (画布水平居中)
+let graphOriginY; // 竖直坐标轴零点的Y位置
+
+// 竖直坐标轴上各个物理量的刻度 (像素/单位)
+// 这些值根据模拟的典型范围进行调整，使其能较好地显示在图表中
+// 这里假设主要模拟单位是像素，并根据经验值设定
+const displacementGraphScale = 1;   // 1 像素/模拟位移单位 (如果位移单位是像素，那就是1像素图表长度/1像素位移)
+const velocityGraphScale = 1.5;    // 1.5 像素/(模拟速度单位)
+const accelerationGraphScale = 2.5; // 2.5 像素/(模拟加速度单位)
+const forceGraphScale = 0.5;   // 0.5 像素/(模拟力单位)
+
+// 时间序列水平坐标轴
+const graphWidth = 400; // 时间序列图表的宽度
+let timeAxisY; // 时间轴的Y位置
+const timeScale = 50; // 时间轴刻度 (像素/秒)
+
+// 历史数据存储数组
+let displacementHistory = [];
+let velocityHistory = [];
+let accelerationHistory = [];
+let forceHistory = [];
+let timeHistory = [];
+
+
 // --- 辅助函数：绘制弹簧 ---
 function drawSpring(startX, endX, y) {
     const springLength = endX - startX;
@@ -89,6 +116,155 @@ function drawSpring(startX, endX, y) {
     ctx.stroke();
 }
 
+// --- 新增：辅助函数：绘制虚线 ---
+function drawDashedLine(ctx, x1, y1, x2, y2, dash = [], color = '#aaa', width = 1) {
+    ctx.beginPath();
+    ctx.setLineDash(dash);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = width;
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+    ctx.setLineDash([]); // 重置为实线
+}
+
+
+// --- 新增：绘制图表函数 ---
+function drawGraphs() {
+    // 重新计算图表原点位置以适应画布大小变化
+    graphOriginX = canvas.width / 2;
+    graphOriginY = floorY + 100; // 位于地面线下方100像素处
+    timeAxisY = graphOriginY + graphHeight / 2 + 50; // 位于竖直轴下方50像素处
+
+    // --- 瞬时值竖直坐标轴 (x, v, a, F) ---
+    const axisStartX = graphOriginX;
+    const axisStartY = graphOriginY - graphHeight / 2;
+    const axisEndY = graphOriginY + graphHeight / 2;
+
+    // 绘制竖直坐标轴线
+    drawDashedLine(ctx, axisStartX, axisStartY, axisStartX, axisEndY, [], '#888', 1);
+
+    // 绘制竖直坐标轴标题和零点标签
+    ctx.font = '14px Arial';
+    ctx.fillStyle = '#333';
+    ctx.textAlign = 'center';
+    ctx.fillText('瞬时值', axisStartX, axisStartY - 20); // 标题
+    ctx.fillText('0', axisStartX - 10, graphOriginY + 5); // 零点标签
+
+    // 获取当前物理量的值（位移、速度、加速度、力）
+    const currentDisplacement = positionX - equilibriumX;
+    const currentVelocity = velocityX;
+    const currentAcceleration = accelerationX;
+    const currentForce = -springConstant * currentDisplacement;
+
+    // 在竖直坐标轴上绘制代表这些值的点
+    const pointRadius = 4;
+
+    // 位移 (蓝色)
+    const dispY = graphOriginY - currentDisplacement * displacementGraphScale;
+    ctx.fillStyle = '#007bff'; // 蓝色
+    ctx.beginPath();
+    ctx.arc(axisStartX, dispY, pointRadius, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillText('x', axisStartX - 20, dispY + 5); // 标签 x
+
+    // 速度 (绿色)
+    const velY = graphOriginY - currentVelocity * velocityGraphScale;
+    ctx.fillStyle = '#28a745'; // 绿色
+    ctx.beginPath();
+    ctx.arc(axisStartX, velY, pointRadius, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillText('v', axisStartX + 20, velY + 5); // 标签 v
+
+    // 加速度 (黄色)
+    const accY = graphOriginY - currentAcceleration * accelerationGraphScale;
+    ctx.fillStyle = '#ffc107'; // 黄色
+    ctx.beginPath();
+    ctx.arc(axisStartX, accY, pointRadius, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillText('a', axisStartX - 20, accY + 5); // 标签 a
+
+    // 力 (红色)
+    const forceY = graphOriginY - currentForce * forceGraphScale;
+    ctx.fillStyle = '#dc3545'; // 红色
+    ctx.beginPath();
+    ctx.arc(axisStartX, forceY, pointRadius, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillText('F', axisStartX + 20, forceY + 5); // 标签 F
+
+    // --- 水平时间序列图表 (x, v, a, F vs. Time) ---
+    const timeGraphOriginX = graphOriginX - graphWidth / 2; // 时间图表左边缘
+    const timeGraphEndX = graphOriginX + graphWidth / 2;    // 时间图表右边缘
+    const timeGraphCenterY = timeAxisY; // 时间轴线Y位置
+
+    // 绘制水平时间轴线
+    drawDashedLine(ctx, timeGraphOriginX, timeGraphCenterY, timeGraphEndX, timeGraphCenterY, [], '#888', 1);
+
+    // 绘制时间轴的零点垂直线（虚线） <-- 修正：将虚线移动到图表右侧，代表当前时间
+    drawDashedLine(ctx, timeGraphEndX, timeGraphCenterY - graphHeight / 2, timeGraphEndX, timeGraphCenterY + graphHeight / 2, [5, 5], '#aaa', 1);
+
+    // 绘制时间轴标签
+    ctx.font = '14px Arial';
+    ctx.fillStyle = '#333';
+    ctx.textAlign = 'center';
+    ctx.fillText('时间 (s)', timeGraphEndX + 40, timeGraphCenterY); // 时间轴标题
+    // 修正：更改标签为“当前时间”，并将其放置在虚线下方
+    ctx.fillText('当前时间', timeGraphEndX, timeGraphCenterY + 20); // '当前时间' 标签
+
+    // 绘制曲线标签
+    ctx.textAlign = 'left';
+    ctx.font = '12px Arial';
+    ctx.fillStyle = '#007bff'; ctx.fillText('x', timeGraphEndX + 10, timeGraphCenterY - graphHeight / 2 + 20);
+    ctx.fillStyle = '#28a745'; ctx.fillText('v', timeGraphEndX + 10, timeGraphCenterY - graphHeight / 2 + 40);
+    ctx.fillStyle = '#ffc107'; ctx.fillText('a', timeGraphEndX + 10, timeGraphCenterY - graphHeight / 2 + 60);
+    ctx.fillStyle = '#dc3545'; ctx.fillText('F', timeGraphEndX + 10, timeGraphCenterY - graphHeight / 2 + 80);
+
+    // 绘制历史数据曲线
+    ctx.lineWidth = 1.5;
+
+    // 确定当前图表上可见的时间范围
+    const maxVisibleTimeSpan = graphWidth / timeScale; // 图表上可见的最大时间跨度
+    // const minTimeToShow = time - maxVisibleTimeSpan; // 此变量在此处不再直接用于X坐标计算，但用于startIndex
+
+    // 找到开始绘制历史数据的索引，避免遍历屏幕外的数据
+    // 应该从 `time - maxVisibleTimeSpan` 之后的数据开始绘制
+    let startIndex = 0;
+    while (startIndex < timeHistory.length && timeHistory[startIndex] < time - maxVisibleTimeSpan) {
+        startIndex++;
+    }
+
+    // 只有当有足够的数据点时才绘制曲线 (至少两个点才能连成线)
+    if (timeHistory.length - startIndex > 1) {
+        // 辅助函数：绘制单条曲线
+        const drawCurve = (dataArray, scale, color) => {
+            ctx.strokeStyle = color;
+            ctx.beginPath();
+            let firstPointDrawn = false;
+            for (let i = startIndex; i < timeHistory.length; i++) {
+                // 修正：将时间转换为图表X坐标
+                // 确保当前时间映射到 timeGraphEndX，历史时间向左延伸
+                const x = timeGraphEndX - (time - timeHistory[i]) * timeScale;
+                // 将物理量转换为图表Y坐标
+                const y = timeGraphCenterY - dataArray[i] * scale;
+                if (!firstPointDrawn) {
+                    ctx.moveTo(x, y);
+                    firstPointDrawn = true;
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            }
+            ctx.stroke();
+        };
+
+        // 绘制四条曲线
+        drawCurve(displacementHistory, displacementGraphScale, '#007bff'); // 位移
+        drawCurve(velocityHistory, velocityGraphScale, '#28a745');       // 速度
+        drawCurve(accelerationHistory, accelerationGraphScale, '#ffc107'); // 加速度
+        drawCurve(forceHistory, forceGraphScale, '#dc3545');         // 力
+    }
+}
+
+
 // --- 画布大小调整 ---
 function resizeCanvas() {
     canvas.width = window.innerWidth;
@@ -106,6 +282,13 @@ function resetSimulation(resetParams = true) {
     isAnimating = false;
     isDragging = false;
     time = 0;
+
+    // 新增：清空历史数据数组
+    displacementHistory = [];
+    velocityHistory = [];
+    accelerationHistory = [];
+    forceHistory = [];
+    timeHistory = [];
 
     if (resetParams) {
         mass = parseFloat(massSlider.value);
@@ -275,11 +458,14 @@ function draw() {
             positionX + accelerationDir * accelerationArrowLength, springAttachY, // 箭头终点
             '#ffc107', 2,
             arrowHeadSize, arrowHeadAngle,
-            'a', // 标签 (小写)
+            'a',
             accelerationDir * arrowLabelMagnitudeXOffset, // 标签X偏移，根据方向调整
             arrowLabelFixedYOffset // 标签Y偏移，固定值
         );
     }
+
+    // 新增：绘制图表
+    drawGraphs(); 
 
     updateDataDisplay();
 }
@@ -296,6 +482,28 @@ function update() {
     velocityX += accelerationX * dt;
     positionX += velocityX * dt;
 
+    // 新增：计算力，用于历史数据存储
+    const currentForce = -springConstant * displacement;
+
+    // 新增：存储历史数据，用于时间序列图表
+    displacementHistory.push(displacement);
+    velocityHistory.push(velocityX);
+    accelerationHistory.push(accelerationX);
+    forceHistory.push(currentForce);
+    timeHistory.push(time);
+
+    // 新增：限制历史数据数组大小，移除屏幕外的数据以优化性能
+    const maxVisibleTimeSpan = graphWidth / timeScale; // 图表上可见的最大时间跨度
+    const minTimeToShow = time - maxVisibleTimeSpan - dt * 2; // 保留一个小的缓冲
+
+    while (timeHistory.length > 0 && timeHistory[0] < minTimeToShow) {
+        displacementHistory.shift();
+        velocityHistory.shift();
+        accelerationHistory.shift();
+        forceHistory.shift();
+        timeHistory.shift();
+    }
+
     // 如果振子移出屏幕 (理想简谐运动不会发生，但作为保护措施)
     if (positionX < -massWidth || positionX > canvas.width + massWidth) {
         cancelAnimationFrame(animationFrameId);
@@ -310,7 +518,7 @@ function animate() {
     draw();
 
     // 只有当模拟正在进行时，才请求下一帧
-    if (isAnimating) { // <-- 添加这个条件判断
+    if (isAnimating) {
         animationFrameId = requestAnimationFrame(animate);
     }
 }
@@ -348,6 +556,9 @@ function handleMouseDown(event) {
 }
 
 function handleMouseMove(event) {
+    // 重要！！！
+    // 这个函数的代码是对的，所以千万不要更改这里的代码。
+    // 里面的注释是错误的
     if (isDragging) {
         const mousePos = getMousePos(event);
         let desiredPositionX = mousePos.x - dragOffsetX;
@@ -359,7 +570,7 @@ function handleMouseMove(event) {
         const wallCollisionLimitX = wallWidth + massWidth / 2;
 
         // 计算最大拉伸位移（从平衡位置开始计算）
-        const maxStretchDisplacement = 2 * L0;
+        const maxStretchDisplacement = 2 * L0; 
 
         // 计算最大压缩位移（从平衡位置开始计算）
         const maxCompressionDisplacement = Math.min(maxStretchDisplacement, equilibriumX - wallCollisionLimitX);
@@ -372,13 +583,13 @@ function handleMouseMove(event) {
         let stopDrag = false;
         let message = "";
 
-        // 首先检查拉伸限制
+        // 检查拉伸限制
         if (desiredPositionX > maxAllowedX) {
             finalPositionX = maxAllowedX; // 限制在最大拉伸边界上
             stopDrag = true;
             message = "警告：拉伸量超过限制，拖拽停止！";
         }
-        // 然后检查压缩限制
+        // 检查压缩限制
         else if (desiredPositionX < minAllowedX) {
             finalPositionX = minAllowedX; // 限制在最大压缩边界上
             stopDrag = true;
@@ -390,7 +601,7 @@ function handleMouseMove(event) {
         
         positionX = finalPositionX; // 应用最终确定的位置
 
-        // --- 核心修改在这里：无论是否停止拖拽，都应该根据当前位置计算加速度 ---
+        // 无论是否停止拖拽，都应该根据当前位置计算加速度，以便绘制箭头和显示
         const currentDisplacement = positionX - equilibriumX;
         accelerationX = -(springConstant / mass) * currentDisplacement;
 
@@ -398,7 +609,7 @@ function handleMouseMove(event) {
             isDragging = false;
             infoDiv.textContent = message;
             velocityX = 0; // 停止物理运动
-            // 不再设置 accelerationX = 0; 让它保持实际值
+            // accelerationX 保持实际值
         }
         draw(); // 立即重绘以显示拖拽效果或限制后的位置
     }
