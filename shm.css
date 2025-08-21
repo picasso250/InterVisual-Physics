@@ -137,37 +137,67 @@ canvas {
     z-index: 10;
 }
 
-/* REMOVED: #dataDisplay table, td, span rules are now largely handled by data_display.css or the new .color-value class */
+/* Updated/Removed comments for dataDisplay internal elements */
+/* REMOVED: #dataDisplay table, td, span rules are now largely handled by data_display.css or custom classes */
+/* The general .color-value rule is now commented out as specific color classes are used. */
 /*
-#dataDisplay table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-#dataDisplay td {
-    padding: 4px 0;
-    white-space: nowrap;
-}
-
-#dataDisplay td:first-child {
-    text-align: right;
-    padding-right: 10px;
-    font-weight: bold;
-}
-
-#dataDisplay td:last-child {
-    text-align: right;
-    color: #007bff; // This specific rule is moved to .color-value
-}
-
-#dataDisplay span {
-    font-weight: bold;
+.color-value {
+    color: #007bff; // This was the old default, now replaced by specific colors
 }
 */
 
-/* NEW: Style for values in the data display table, applied via JS */
-.color-value {
-    color: #007bff; /* 数值颜色与控制器保持一致 */
+/* NEW: General styles for data display labels and values within the dynamically generated structure */
+/* Assuming data_display.js creates a structure like:
+   <div id="dataDisplay">
+       <div>
+           <span class="data-field-label">Label:</span>
+           <span class="data-field-value color-time">Value</span>
+       </div>
+       ...
+   </div>
+*/
+#dataDisplay > div {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 0;
+}
+
+.data-field-label {
+    text-align: right;
+    padding-right: 10px;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+.data-field-value {
+    text-align: right;
+    white-space: nowrap;
+    font-weight: bold; /* Keep bold for values */
+    padding-left: 10px;
+    min-width: 80px; /* Ensure enough space for values */
+}
+
+
+/* NEW: Specific color classes for data display values, matching arrow colors */
+.color-time {
+    color: #555; /* Neutral gray for time, as requested */
+}
+
+.color-displacement {
+    color: #007bff; /* Blue for displacement (x) */
+}
+
+.color-velocity {
+    color: #28a745; /* Green for velocity (v) */
+}
+
+.color-acceleration {
+    color: #ffc107; /* Yellow for acceleration (a) */
+}
+
+.color-force-display { /* Red for force (F), used for data display to avoid clash with formula .color-force */
+    color: #dc3545;
 }
 
 
